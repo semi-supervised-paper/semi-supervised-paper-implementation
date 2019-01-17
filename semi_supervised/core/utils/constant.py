@@ -1,0 +1,16 @@
+DATA_NO_LABEL = -1
+LOG_TRAIN_PREFIX = "log_train"
+LOG_TEST_PREFIX = "log_test"
+LOG_VALIDATE_PREFIX = "log_validate"
+METHOD_MEAN_TEACHER = "mean_teacher"
+METHOD_TEMPORAL_ENSEMBLING = "temporal_ensembling"
+METHOD_VAT = 'vat'
+METHOD_KDTE = "kdte"
+METHOD_OUTER_MEAN = "om"
+METHOD_MTTE = 'mete'
+DATA_TWO_MOONS = "two_moons"
+DATA_TWO_CIRCLES = "two_circles"
+DATA_FOUR_SPINS = "four_spins"
+DATA_CIFAR10 = "cifar10"
+DATA_CIFAR100 = "cifar100"
+DATA_IMAGENET = "imagenet"
