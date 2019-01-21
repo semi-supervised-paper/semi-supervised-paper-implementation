@@ -1,5 +1,9 @@
 # semi-supervised-paper-implementation
 
+```
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+```
+
 This repository is designed to reproduce the methods in some semi-supervised papers.
 
 Before running the code, you need to install the packages according to the following command.
