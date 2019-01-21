@@ -5,8 +5,8 @@ import scipy.misc
 
 data_dir = 'data_raw'  # path of CIFAR-10 data_batch_{1, 2, 3, 4, 5}
 num_labels = 4000  # how many training data is labeled
-target_dir = 'data_local/images/cifar/cifar10/by-image'  # path used to save CIFAR-10 images
-file_dir = 'data_local/labels/cifar10'  # folder used to save path of unlabeled data
+target_dir = '../data_local/images/cifar/cifar10/by-image'  # path used to save CIFAR-10 images
+file_dir = '../data_local/labels/cifar10'  # folder used to save path of unlabeled data
 
 
 def load_file(file_name):
