@@ -50,8 +50,8 @@ to reproduce the result in [Mean teachers are better role models](https://arxiv.
 
 | Number of Labeled Data                                       | 1000      | 2000      | 4000      | All labels |
 | ------------------------------------------------------------ | --------- | --------- | --------- | ---------- |
-| Pai model (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 72.64     | **81.98** | 86.8      | 93.94      |
-| **Pai model (this repository)**                              | **74.35** | 81.68     | **87.22** | **94.26**  |
+| Pi model (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 72.64     | **81.98** | 86.8      | 93.94      |
+| **Pi model (this repository)**                              | **74.35** | 81.68     | **87.22** | **94.26**  |
 | Mean Teacher (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 78.45     | 84.27     | **87.69** | 94.06      |
 | **Mean Teacher (this repository)**                           | **79.41** | **85.56** | 86.21     | **94.3**   |
 
@@ -100,10 +100,11 @@ The curve of consistency weight is shown in the figure below.
 
 ## TODO list
 
-```
+- [x] Mean Teacher
+- [x] Pi Model
+- [ ] Temporal Ensembling Model
 - [ ] VAT
-- [ ] More.....
-```
+- [ ] More....
 
 
 
