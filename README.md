@@ -98,3 +98,20 @@ The curve of consistency weight is shown in the figure below.
 
 
 
+## TODO list
+
+```
+- [ ] VAT
+- [ ] More.....
+```
+
+
+
+## References
+
+1.  [Mean teachers are better role models](https://github.com/CuriousAI/mean-teacher)
+2.  [Temporal Ensembling for Semi-Supervised Learning](https://github.com/smlaine2/tempens)
+3.  [Good Semi-Supervised Learning that Requires a Bad GAN](https://github.com/kimiyoung/ssl_bad_gan)
+
+4.  [Smooth Neighbors on Teacher Graphs for Semi-supervised Learning](https://github.com/xinmei9322/SNTG)
+
