@@ -1,9 +1,5 @@
 # semi-supervised-paper-implementation
 
-```
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-```
-
 This repository is designed to reproduce the methods in some semi-supervised papers.
 
 Before running the code, you need to install the packages according to the following command.
@@ -72,9 +68,7 @@ In semi-supervised learning, many papers use common training strategies. This se
 
 ### Learning rate
 
-$$
-lr = rampup\_value * rampdown\_value * init\_lr
-$$
+<a href="https://www.codecogs.com/eqnedit.php?latex=lr&space;=&space;rampup\_value&space;*&space;rampdown\_value&space;*&space;init\_lr" target="_blank"><img src="https://latex.codecogs.com/png.latex?lr&space;=&space;rampup\_value&space;*&space;rampdown\_value&space;*&space;init\_lr" title="lr = rampup\_value * rampdown\_value * init\_lr" /></a>
 
 You can find out how to compute rampup_value and rampdown_value in semi_supervised/core/utils/fun_utils.py.
 
@@ -85,9 +79,9 @@ The curve of the learning rate is shown in the figure below.
 ### Optimizer
 
 Many methods in semi-supervised learning use Adam optimizer with beta1 = 0.9 and beta2 = 0.999. During training, beta1 is dynamically changed.
-$$
-adam\_beta1 = rampdown\_value * 0.9 + (1.0 - rampdown\_value) * 0.5
-$$
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=adam\_beta1&space;=&space;rampdown\_value&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;rampdown\_value)&space;*&space;0.5" target="_blank"><img src="https://latex.codecogs.com/png.latex?adam\_beta1&space;=&space;rampdown\_value&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;rampdown\_value)&space;*&space;0.5" title="adam\_beta1 = rampdown\_value * 0.9 + (1.0 - rampdown\_value) * 0.5" /></a>
+
 The curve of beta1 is shown in the figure below.
 
 <img src="semi_supervised/pics/Adam1.png" alt="alt text" width="250" height="250">
@@ -95,9 +89,9 @@ The curve of beta1 is shown in the figure below.
 ### Consistency Weight
 
 Some methods use dynamically changed weight to balance supervised loss and unsupervised loss. 
-$$
-weight = init\_weight * rampup\_value
-$$
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=weight&space;=&space;init\_weight&space;*&space;rampup\_value" target="_blank"><img src="https://latex.codecogs.com/png.latex?weight&space;=&space;init\_weight&space;*&space;rampup\_value" title="weight = init\_weight * rampup\_value" /></a>
+
 The curve of consistency weight is shown in the figure below.
 
 <img src="semi_supervised/pics/ConsistencyWeight.png" alt="alt text" width="250" height="250">
