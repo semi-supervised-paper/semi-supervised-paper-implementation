@@ -1,11 +1,12 @@
 import os
 import time
+import re
 
 import torch
 
 from .basic_method import BasicMethod
 from ..utils.loss_util import VATLoss
-from ..utils.log_util import AverageMeter, AverageMeterSet
+from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
 from ..utils.fun_util import accuracy, save_checkpoint_to_file, save_best_checkpoint_to_file, parameters_string
 from ..utils.constant import DATA_NO_LABEL, METHOD_VAT
 
@@ -25,12 +26,25 @@ class VAT(BasicMethod):
         self.loss_ce = torch.nn.CrossEntropyLoss(ignore_index=DATA_NO_LABEL).cuda()
         self.loss_vat = VATLoss()
 
+        self.map = dict.fromkeys(['Epoch', 'EpochTime', 'TrainLoss', 'TestLoss', 'TestAccuracy',
+                                  'TrainSupervisedLoss', 'TrainConsisencyLoss', 'TrainUnsupervisedLoss',
+                                  'LearningRate'])
+
+        n_labels = re.findall(r"(\d+)_balanced_labels", str(args.labels))
+        if len(n_labels) == 0:
+            labels_str = "all_labels"
+        else:
+            labels_str = str(n_labels[0])
+        self.training_csv = GenericCSV(os.path.join(self.result_folder, 'training_label_{lb}_seed_{se}.csv'
+                                                    .format(lb=labels_str, se=args.seed)),
+                                       *list(self.map.keys()))
+
     def adjust_optimizer_params(self, optimizer, epoch):
         if epoch < self.args.epoch_decay_start:
             for param_group in optimizer.param_groups:
                 super(VAT, self).log_to_tf("lr", param_group['lr'], epoch, True)
                 super(VAT, self).log_to_tf("beta1", param_group['betas'][0], epoch, True)
-                return param_group['lr'], param_group['betas'][0]
+                return param_group['lr']
         else:
             decayed_lr = ((self.args.epochs - epoch) / float(
                         self.args.epochs - self.args.epoch_decay_start)) * self.args.lr
@@ -61,7 +75,8 @@ class VAT(BasicMethod):
             self._save_checkpoint(epoch, self.global_step, top1_avg_validate, top5_avg_validate,
                                   self.best_top1_validate, self.best_top5_validate,
                                   class_loss_avg_validate, is_best)
-            
+
+            self.training_csv.add_data(*list(self.map.values()))
             end = time.time()
             print("EPOCH {e} use {time} s".format(e=epoch, time=(end-start)))
         print("best test top1 accuracy is {acc}".format(acc=self.best_top1_validate))
@@ -82,7 +97,7 @@ class VAT(BasicMethod):
         losses_vat = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
-        loss_avg = AverageMeter()
+        losses_all = AverageMeter()
 
         start = time.time()
         end = time.time()
@@ -93,7 +108,7 @@ class VAT(BasicMethod):
 
         total_data_size, total_labeled_size = 0, 0
         for i, (input, target) in enumerate(self.train_loader):
-            if isinstance(input, tuple):
+            if isinstance(input, tuple) or isinstance(input, list):
                 input_var = torch.autograd.Variable(input[0])
             else:
                 input_var = torch.autograd.Variable(input)
@@ -108,32 +123,38 @@ class VAT(BasicMethod):
             total_data_size += minibatch_size
             total_labeled_size += labeled_minibatch_size
 
-            print(target != DATA_NO_LABEL)
-            exit()
-            output_1 = self.model(input_var[(target != DATA_NO_LABEL).view(-1).nonzero()])
+            input_labeled_index = (target != DATA_NO_LABEL).view(-1).nonzero().view(-1)
+            input_unlabeled_index = (target == DATA_NO_LABEL).view(-1).nonzero().view(-1)
 
-            loss_ce = self.loss_ce(output_1, target_var)
-            loss_vat = self.args.vat_wt * self.loss_vat(self.model, input_var[(target == DATA_NO_LABEL).view(-1).nonzero()])
+            if input_labeled_index is None or len(input_labeled_index) == 0:
+                loss_ce = torch.cuda.FloatTensor([0])
+                output_1 = None
+            else:
+                output_1 = self.model(input_var[input_labeled_index])
+                loss_ce = self.loss_ce(output_1, target_var[input_labeled_index])
+
+            loss_vat = self.args.vat_wt * self.loss_vat(self.model, input_var[input_unlabeled_index])
 
             if i % 50 == 0:
                 print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, weighted_loss_vat = {vat}"
                       .format(ls=labeled_minibatch_size, ms=minibatch_size,ce=loss_ce, vat=loss_vat.item()))
 
             loss = loss_ce + loss_vat
-            loss_avg.update(loss.item())
+            losses_all.update(loss.item())
 
             super(VAT, self).log_to_tf("supervised_loss", loss_ce.item(), self.global_step, True)
             super(VAT, self).log_to_tf("consistency_loss", loss_vat.item(), self.global_step, True)
             # measure accuracy and record loss
-            if self.args.topk == 1:
-                prec1 = accuracy(output_1.data, target_var.data, topk=(1, ))[0]
-            else:
-                prec1, prec5 = accuracy(output_1.data, target_var.data, topk=(1, 5))
+            if self.args.topk == 1 and output_1 is not None:
+                prec1 = accuracy(output_1.data, target_var[input_labeled_index].data, topk=(1, ))[0]
+                top1.update(prec1.item(), labeled_minibatch_size)
+            elif output_1 is not None:
+                prec1, prec5 = accuracy(output_1.data, target_var[input_labeled_index].data, topk=(1, 5))
                 top5.update(prec5.item(), labeled_minibatch_size)
+                top1.update(prec1.item(), labeled_minibatch_size)
 
             losses_ce.update(loss_ce.item())
             losses_vat.update(loss_vat.item())
-            top1.update(prec1.item(), labeled_minibatch_size)
 
             # compute gradient and do SGD step
             self.optimizer.zero_grad()
@@ -152,18 +173,26 @@ class VAT(BasicMethod):
               'Train_Error5_Epoch: {Train_Error5_Epoch}, Learning_Rate: {lr}'.format(
                 time=time.time()-start,
                 e=epoch, Loss_CE_Epoch=losses_ce.avg, Loss_Consisency_Epoch=losses_vat.avg,
-                Loss_All_Epoch=loss_avg.avg, Train_Top1_Epoch=top1.avg, Train_Top5_Epoch=top5.avg,
+                Loss_All_Epoch=losses_all.avg, Train_Top1_Epoch=top1.avg, Train_Top5_Epoch=top5.avg,
                 Train_Error1_Epoch= 100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
                 lr=lr
               ))
 
         super(VAT, self).log_to_tf("Loss_CE_Epoch", losses_ce.avg, epoch, True)
         super(VAT, self).log_to_tf("Loss_Consisency_Epoch", losses_vat.avg, epoch, True)
-        super(VAT, self).log_to_tf("Loss_All_Epoch", loss_avg.avg, epoch, True)
+        super(VAT, self).log_to_tf("Loss_All_Epoch", losses_all.avg, epoch, True)
         super(VAT, self).log_to_tf("Train_Top1_Epoch", top1.avg, epoch, True)
         super(VAT, self).log_to_tf("Train_Top5_Epoch", top5.avg, epoch, True)
         super(VAT, self).log_to_tf("Train_Error1_Epoch", 100.0 - top1.avg, epoch, True)
         super(VAT, self).log_to_tf("Train_Error5_Epoch", 100.0 - top5.avg, epoch, True)
+
+        self.map['Epoch'] = epoch
+        self.map['EpochTime'] = time.time() - start
+        self.map['TrainLoss'] = losses_all.avg
+        self.map['TrainConsisencyLoss'] = losses_vat.avg
+        self.map['TrainSupervisedLoss'] = losses_ce.avg
+        self.map['TrainUnsupervisedLoss'] = losses_vat.avg
+        self.map['LearningRate'] = lr
 
     def _validate(self, epoch=None):
         class_criterion = torch.nn.CrossEntropyLoss(reduction="sum", ignore_index=DATA_NO_LABEL).cuda()
@@ -209,13 +238,17 @@ class VAT(BasicMethod):
                 # measure elapsed time
                 meters.update('batch_time', time.time() - end)
                 end = time.time()
-            
+
             if epoch is not None:
-                super(VAT, self).log_to_tf("Test_Top1_Epoch", meters['top1'].avg.avg, epoch, False)
+                super(VAT, self).log_to_tf("Test_Top1_Epoch", meters['top1'].avg, epoch, False)
                 super(VAT, self).log_to_tf("Test_Top5_Epoch", meters['top5'].avg, epoch, False)
                 super(VAT, self).log_to_tf("Test_Error1_Epoch", 100.0 - meters['top1'].avg, epoch, False)
                 super(VAT, self).log_to_tf("Test_Error5_Epoch", 100.0 - meters['top5'].avg, epoch, False)
                 super(VAT, self).log_to_tf("Test_Class_Loss", meters['class_loss'].avg, epoch, False)
+
+                self.map['TestLoss'] = meters['class_loss'].avg
+                self.map['TestAccuracy'] = meters['top1'].avg
+
             print(' * Prec@1 {top1.avg:.3f}\tPrec@5 {top5.avg:.3f}\tClass_Loss {cl.avg:.5f}'
                   .format(top1=meters['top1'], top5=meters['top5'], cl=meters['class_loss']))
 

@@ -383,6 +383,7 @@ def global_contrast_normalize(tensor, scale=55., min_divisor=1e-8):
 
     return X
 
+
 def hor_flip_tensor(tensor):
     assert tensor.dim() == 3
     if np.random.uniform() > 0.5:

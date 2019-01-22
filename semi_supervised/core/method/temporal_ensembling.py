@@ -31,7 +31,7 @@ class TemporalEnsembling(BasicMethod):
                                   'TrainSupervisedLoss', 'TrainPiLoss', 'TrainUnsupervisedLoss',
                                   'LearningRate'])
 
-        n_labels = re.findall(r"/(.+?)_balanced_labels",str(args.labels))
+        n_labels = re.findall(r"/(\d+)_balanced_labels", str(args.labels))
         if len(n_labels) == 0:
             labels_str = "all_labels"
         else:

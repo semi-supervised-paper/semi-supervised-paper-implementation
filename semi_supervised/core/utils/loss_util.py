@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from .fun_util import get_normalized_vector, kl_div, disable_tracking_bn_stats
+from .fun_util import l2_normalize, kl_div, disable_tracking_bn_stats
 
 
 class VATLoss(torch.nn.Module):
@@ -19,8 +19,7 @@ class VATLoss(torch.nn.Module):
     def forward(self, model, x):
         # prepare random unit tensor
         d = torch.randn(x.shape).to(x.device)
-        xp = x.data
-        d = get_normalized_vector(d, xp)
+        d = l2_normalize(d)
 
         with disable_tracking_bn_stats(model):
             with torch.no_grad():
@@ -32,7 +31,7 @@ class VATLoss(torch.nn.Module):
                 adv_distance = kl_div(F.log_softmax(pred_hat, dim=1), pred)
                 adv_distance.backward()
                 d = d.grad
-                d = d / xp.sqrt(xp.sum(d ** 2, axis=range(1, len(d.shape)), keepdims=True))
+                d = l2_normalize(d)
                 model.zero_grad()
     
             # calc LDS

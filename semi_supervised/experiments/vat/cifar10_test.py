@@ -15,6 +15,7 @@ from ...core import main
 
 import torch
 
+
 def parameters():
     defaults = {
         # Technical details
@@ -28,7 +29,7 @@ def parameters():
 
         # Data sampling
         'base_batch_size': 100,
-        'base_labeled_batch_size': 22,
+        'base_labeled_batch_size': -1,
 
         # Architecture
         'arch': 'convsmallcifar',
@@ -48,17 +49,15 @@ def parameters():
             'data_seed': data_seed,
             'epochs': 120
         }
-    
-    return
+
     # 1000 labels:
-    for data_seed in range(10, 20):
+    for data_seed in range(1000, 1001):
         yield {
             **defaults,
             'title': '1000-label cifar-10',
             'n_labels': 1000,
             'data_seed': data_seed,
-            'epochs': 180,
-            'lr_rampdown_epochs': 210
+            'epochs': 120
         }
 
 
@@ -73,8 +72,8 @@ def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data
         'batch_size': base_batch_size * ngpu,
         'labeled_batch_size': base_labeled_batch_size * ngpu,
         'lr': base_lr * ngpu,
-        'labels': './data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'.format(n_labels, data_seed) \
-                  if data_seed <= 10 else './data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
+        'labels': '../data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'.format(n_labels, data_seed) \
+                  if data_seed <= 10 else '../data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
     }
     main.main_args = parse_dict_args(**adapted_args, **kwargs)
     main.main()

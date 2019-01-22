@@ -10,6 +10,7 @@ import shutil
 import argparse
 import math
 import contextlib
+import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -143,9 +144,9 @@ def rampdown(epoch, epochs, rampdown_epoch):
         return 1.0
 
 
-def get_normalized_vector(d, xp):
-    d /= (1e-12 + xp.max(xp.abs(d), range(1, len(d.shape)), keepdims=True))
-    d /= xp.sqrt(1e-6 + xp.sum(d ** 2, range(1, len(d.shape)), keepdims=True))
+def l2_normalize(d):
+    d_reshaped = d.view(d.shape[0], -1, *(1 for _ in range(d.dim() - 2)))
+    d /= torch.norm(d_reshaped, dim=1, keepdim=True) + 1e-8
     return d
 
 
