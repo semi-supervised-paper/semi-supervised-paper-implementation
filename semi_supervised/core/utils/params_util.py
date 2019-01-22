@@ -7,7 +7,7 @@
 import re
 import argparse
 from .fun_util import str2bool
-from .constant import LOG_TRAIN_PREFIX, METHOD_MEAN_TEACHER
+from .constant import METHOD_MEAN_TEACHER
 
 __all__ = ['parse_commandline_args', 'parse_dict_args']
 
@@ -51,12 +51,13 @@ def __create_parser():
                         metavar='LR', help='max learning rate')
     parser.add_argument('--initial-lr', default=0.0, type=float,
                         metavar='LR', help='initial learning rate when using linear rampup')
-    parser.add_argument('--rampup-epoch', default=0, type=int, metavar='EPOCHS',
+    parser.add_argument('--rampup-epoch', default=80, type=int, metavar='EPOCHS',
                         help='length of learning rate rampup in the beginning')
-    parser.add_argument('--rampdown-epoch', default=None, type=int, metavar='EPOCHS',
+    parser.add_argument('--rampdown-epoch', default=50, type=int, metavar='EPOCHS',
                         help='length of learning rate cosine rampdown (>= length of training)')
     parser.add_argument('--checkpoint-epochs', default=1, type=int,
-                        metavar='EPOCHS', help='checkpoint frequency in epochs, 0 to turn checkpointing off (default: 1)')
+                        metavar='EPOCHS',
+                        help='checkpoint frequency in epochs, 0 to turn checkpointing off (default: 1)')
     parser.add_argument('--evaluation-epochs', default=1, type=int,
                         metavar='EPOCHS', help='evaluation frequency in epochs, 0 to turn evaluation off (default: 1)')
     parser.add_argument('--print-freq', '-p', default=10, type=int,
@@ -92,7 +93,8 @@ def __create_parser():
                         choices=['mse', 'kl'],
                         help='consistency loss type to use')
     parser.add_argument('--logit-distance-cost', default=-1, type=float, metavar='WEIGHT',
-                        help='let the student model have two outputs and use an MSE loss between the logits with the given weight (default: only have one output)')
+                        help='let the student model have two outputs and use an MSE loss '
+                             'between the logits with the given weight (default: only have one output)')
     
     '''
     parameters used in VAT
@@ -103,12 +105,6 @@ def __create_parser():
     parser.add_argument('--vat-wt', default=1., type=float, metavar='ALPHA',
                         help='balance vat loss and cross entropy loss') 
 
-
-    '''
-    parameters used in KDTE
-    '''
-    parser.add_argument('--k-forward', default=4., type=int, metavar='ALPHA',
-                        help='K parameter used in KDTE') 
     return parser
 
 

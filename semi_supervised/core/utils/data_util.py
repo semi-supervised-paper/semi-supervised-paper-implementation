@@ -137,32 +137,6 @@ class TwoStreamBatchSampler(Sampler):
         return len(self.primary_indices) // self.primary_batch_size
 
 
-class SimpleDataset(torch.utils.data.Dataset):
-    """Dataset wrapping tensors.
-
-    Each sample will be retrieved by indexing tensors along the first dimension.
-
-    Arguments:
-        *tensors (Tensor): tensors that have the same size of the first dimension.
-    """
-
-    def __init__(self, data, target, transform):
-        assert data.size(0) == target.size(0)
-        self.data = torch.from_numpy(data).float()
-        self.target = torch.from_numpy(target).long()
-        self.transform = transform
-
-    def __getitem__(self, index):
-        x = self.data[index]
-        y = self.target[index]
-        if self.transform is not None:
-            x = self.transform(x)
-        return x, y
-
-    def __len__(self):
-        return self.data.size(0)
-
-
 def iterate_once(iterable):
     return np.random.permutation(iterable)
 
@@ -205,9 +179,6 @@ def relabel_dataset(dataset, labels):
 
 
 def create_data_loaders_from_data(data_x_train, data_y_train, data_x_test, data_y_test, labeled_mask, train_transformation, args):
-    # if len(data_y_train.shape) == 1:
-    #     data_y_train = data_y_train.reshape(data_y_train.shape[0], 1)
-    #     data_y_test = data_y_test.reshape(data_y_test.shape[0], 1)
     if len(data_x_train.shape) == 4 and data_x_train.shape[-1] == 1 and data_x_train.shape[-2] == 1:
         data_x_train = data_x_train.reshape(data_x_train.shape[0], data_x_train.shape[1])
 
@@ -215,7 +186,7 @@ def create_data_loaders_from_data(data_x_train, data_y_train, data_x_test, data_
         data_x_test = data_x_test.reshape(data_x_test.shape[0], data_x_test.shape[1])
 
     tensor_x_train = torch.stack([torch.Tensor(i) for i in data_x_train])
-    tensor_y_train = torch.from_numpy(data_y_train).long() #torch.stack([torch.Tensor(i) for i in data_y_train]).long()
+    tensor_y_train = torch.from_numpy(data_y_train).long()
     dataset_train = torch.utils.data.TensorDataset(tensor_x_train, tensor_y_train)
     for i in range(len(dataset_train.tensors[0])):
         if labeled_mask[i] == 0.0:
@@ -229,7 +200,6 @@ def create_data_loaders_from_data(data_x_train, data_y_train, data_x_test, data_
                               shuffle=False)
 
     tensor_x_test = torch.stack([torch.Tensor(i) for i in data_x_test])
-    #tensor_y_test = torch.stack([torch.Tensor(i) for i in data_y_test])
     tensor_y_test = torch.from_numpy(data_y_test).long()
     dataset_eval = torch.utils.data.TensorDataset(tensor_x_test, tensor_y_test)
     eval_loader = DataLoader(dataset_eval, batch_size=args.batch_size, pin_memory=True, drop_last=False,
@@ -308,18 +278,6 @@ def load_two_moons(data_dir):
     for i in range(3):
         loaded_objects.append(pickle.load(f, encoding='latin1'))
     f.close()
-    # num_all = np.shape(loaded_objects[0])[0]
-    # num_test = num_all // 5
-    # num_train = num_all - num_test
-
-    # nrng = np.random.RandomState(seed=12345)
-    # indices = nrng.permutation(num_all)
-    # test_indices = indices[:num_test]
-    # train_indices = indices[num_test:]
-    # x_train = np.reshape(loaded_objects[0][train_indices], [-1, 2, 1, 1])
-    # x_test = np.reshape(loaded_objects[0][test_indices], [-1, 2, 1, 1])
-    # y_train = np.int32(loaded_objects[1][train_indices])
-    # y_test = np.int32(loaded_objects[1][test_indices])
 
     x_train = np.reshape(loaded_objects[0], [-1, 2])
     x_test = np.reshape(loaded_objects[0], [-1, 2])
@@ -338,18 +296,6 @@ def load_two_circles(data_dir):
     for i in range(3):
         loaded_objects.append(pickle.load(f))
     f.close()
-    # num_all = np.shape(loaded_objects[0])[0]
-    # num_test = num_all // 5
-    # num_train = num_all - num_test
-
-    # nrng = np.random.RandomState(seed=12345)
-    # indices = nrng.permutation(num_all)
-    # test_indices = indices[:num_test]
-    # train_indices = indices[num_test:]
-    # x_train = np.reshape(loaded_objects[0][train_indices], [-1, 2, 1, 1])
-    # x_test = np.reshape(loaded_objects[0][test_indices], [-1, 2, 1, 1])
-    # y_train = np.int32(loaded_objects[1][train_indices])
-    # y_test = np.int32(loaded_objects[1][test_indices])
 
     x_train = np.reshape(loaded_objects[0], [-1, 2, 1, 1])
     x_test = np.reshape(loaded_objects[0], [-1, 2, 1, 1])

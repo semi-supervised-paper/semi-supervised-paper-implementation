@@ -78,7 +78,7 @@ def two_moons():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'data_local/synthetic',
+        'datadir': r'../data_local/synthetic',
         'num_class': 2
     }
 
@@ -91,7 +91,7 @@ def two_circles():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'data_local\\synthetic',
+        'datadir': r'../data_local/synthetic',
         'num_class': 2
     }
 
@@ -104,6 +104,6 @@ def four_spins():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'data_local\\synthetic',
+        'datadir': r'../data_local/synthetic',
         'num_class': 4
     }

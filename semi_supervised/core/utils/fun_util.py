@@ -6,11 +6,9 @@
 
 import sys
 import os
-import shutil
 import argparse
 import math
 import contextlib
-import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -104,16 +102,12 @@ def accuracy(output, target, topk=(1,)):
 def save_checkpoint_to_file(state, epoch, is_best, ckptfolder):
     filename = 'checkpoint.{}.ckpt'.format(epoch)
     checkpoint_path = os.path.join(ckptfolder, filename)
-    best_path = os.path.join(ckptfolder, 'best.ckpt')
     try:
         torch.save(state, checkpoint_path)
     except:
         os.makedirs(ckptfolder)
         torch.save(state, checkpoint_path)
     print("--- checkpoint saved to %s ---" % checkpoint_path)
-    if is_best:
-        shutil.copyfile(checkpoint_path, best_path)
-        print("--- checkpoint copied to %s ---" % best_path)
 
 
 def save_best_checkpoint_to_file(state, is_best, ckptfolder):

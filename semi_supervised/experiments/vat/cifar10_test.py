@@ -5,8 +5,6 @@
 # http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to
 # Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-"""Train CIFAR-10 with 1000 or 4000 labels and all training images. Evaluate against test set."""
-
 import sys
 from ...core.utils.params_util import parse_dict_args
 from ...core.utils.constant import LOG_TRAIN_PREFIX
@@ -33,6 +31,9 @@ def parameters():
 
         # Architecture
         'arch': 'convsmallcifar',
+
+        'rampup_epoch': 80,
+        'rampdown_epoch': 50,
 
         'base_lr': 0.001,
         'topk': 5,

@@ -173,8 +173,10 @@ class MeanTeacher(BasicMethod):
             losses_all.update(loss.item())
 
             if i % 50 == 0:
-                print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, weighted_loss_cons = {cons}"
-                      .format(ls=labeled_minibatch_size, ms=minibatch_size,ce=loss_supervised, cons=loss_consistency.item()))
+                print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, "
+                      "weighted_loss_cons = {cons}"
+                      .format(ls=labeled_minibatch_size, ms=minibatch_size,
+                              ce=loss_supervised, cons=loss_consistency.item()))
 
             super(MeanTeacher, self).log_to_tf("supervised_loss", loss_supervised.item(), self.global_step, True)
             super(MeanTeacher, self).log_to_tf("consistency_loss", loss_consistency.item(), self.global_step, True)
@@ -208,8 +210,10 @@ class MeanTeacher(BasicMethod):
             self.global_step += 1
 
         if not init_mode:
-            print("labeled_minibatch_size is {lms}, total_size is {ts}".format(lms=total_labeled_size, ts=total_data_size))
-            print('Time {time}, Epoch: {e}: Loss_CE_Epoch {Loss_CE_Epoch}, Loss_Consisency_Epoch {Loss_Consisency_Epoch}'
+            print("labeled_minibatch_size is {lms}, total_size is {ts}"
+                  .format(lms=total_labeled_size, ts=total_data_size))
+            print('Time {time}, Epoch: {e}: Loss_CE_Epoch {Loss_CE_Epoch}, '
+                  'Loss_Consisency_Epoch {Loss_Consisency_Epoch}'
                   ' Loss_All_Epoch: {Loss_All_Epoch}, Train_Top1_Epoch: {Train_Top1_Epoch},'
                   'Train_Top5_Epoch: {Train_Top5_Epoch}, Train_Error1_Epoch: {Train_Error1_Epoch}, '
                   'Train_Error5_Epoch: {Train_Error5_Epoch}, Learning_Rate: {lr}'.format(

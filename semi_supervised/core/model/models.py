@@ -21,13 +21,6 @@ def simplenet(pretrained=False, **kwargs):
 
 
 @export
-def simplenetmultibranch(pretrained=False, **kwargs):
-    assert not pretrained
-    model = SimpleModelMultipleBranch(**kwargs)
-    return model
-
-
-@export
 def convsmallcifar(pretrained=False, **kwargs):
     assert not pretrained
     model = ConvSmallCifar(**kwargs)

@@ -2,8 +2,8 @@ import numpy as np
 import torch
 from ..model.synthetic_net import SyntheticNet
 
-model_location = r'C:\Users\Administrator\Downloads\图片\semi-supervised.tar\semi_supervised\result'
-data_dir = r'C:\Users\Administrator\Downloads\图片\semi-supervised.tar\semi_supervised\data_local\synthetic'
+model_location = r'semi_supervised\result'
+data_dir = r'semi_supervised\data_local\synthetic'
 
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -97,6 +97,7 @@ def build_model_baseline(load_network_filename, X_test, Y_test):
 
     return validate(model, X_test, Y_test)
 
+
 def plot(mesh_X, mesh_Y, X, Y, mask_value, figname):
     import matplotlib.pyplot as plt
     colors = np.array([x for x in 'bcrymykbgrcmykbgrcmykbgrcmyk'])
@@ -118,6 +119,7 @@ def plot(mesh_X, mesh_Y, X, Y, mask_value, figname):
     plt.clf()
     print('save fig {}.png\n'.format(figname))
 
+
 def plot_points(mesh_X, mesh_Y, X, Y, mask_value, figname):
     import matplotlib.pyplot as plt
     colors = np.array([x for x in 'bcrymykbgrcmykbgrcmykbgrcmyk'])
@@ -136,6 +138,7 @@ def plot_points(mesh_X, mesh_Y, X, Y, mask_value, figname):
     plt.savefig(os.path.join(model_location, '{}_points.png'.format(figname)))
     plt.clf()
     print('save fig {}_points.png\n'.format(figname))
+
 
 def plot_boundary(mesh_X, mesh_Y, X, Y, mask_value, figname):
     import matplotlib.pyplot as plt
@@ -230,7 +233,7 @@ def sample_inputs(input, target):
 
 
 def test():
-    model_name = 'checkpoint.400.ckpt'
+    model_name = 'checkpoint.ckpt'
     tmp_name = model_name
     mesh_X, mesh_Y, X, Y, mask_value = save_to_plot(model_location, model_name)
     plot(mesh_X, mesh_Y, X, Y, mask_value, tmp_name)

@@ -1,5 +1,11 @@
-import logging
-from datetime import datetime
+import tensorflow as tf
+import numpy as np
+import scipy.misc
+
+try:
+    from StringIO import StringIO  # Python 2.7
+except ImportError:
+    from io import BytesIO  # Python 3.x
 
 
 class AverageMeterSet:
@@ -54,19 +60,8 @@ class AverageMeter:
         return "{self.val:{format}} ({self.avg:{format}})".format(self=self, format=format)
 
 
-# Code referenced from https://gist.github.com/gyglim/1f8dfb1b5c82627ae3efcfbbadb9f514
-import tensorflow as tf
-import numpy as np
-import scipy.misc
-
-try:
-    from StringIO import StringIO  # Python 2.7
-except ImportError:
-    from io import BytesIO  # Python 3.x
-
-
 class TensorboardLogger(object):
-
+    # This code is referenced from https://gist.github.com/gyglim/1f8dfb1b5c82627ae3efcfbbadb9f514
     def __init__(self, log_dir):
         """Create a summary writer logging to log_dir."""
         self.writer = tf.summary.FileWriter(log_dir)
@@ -129,6 +124,7 @@ class TensorboardLogger(object):
 
 
 class GenericCSV(object):
+    # This code is referenced from https://github.com/smlaine2/tempens/blob/master/report.py
     def __init__(self, fname, *fields):
         self.fields = fields
         self.fout = open(fname, 'wt')
