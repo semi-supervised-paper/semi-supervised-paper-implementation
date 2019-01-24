@@ -48,7 +48,7 @@ def cifar10():
     '''
     import scipy.io as sio
     import torch
-    mat_contents = sio.loadmat('../data_local/zca_theano.mat')
+    mat_contents = sio.loadmat('./data_local/zca_theano.mat')
     transformation_matrix = torch.from_numpy(mat_contents['zca_matrix']).float()
     transformation_mean = torch.from_numpy(mat_contents['zca_mean'][0]).float()
     train_transformation = TransformTwice(transforms.Compose([
@@ -65,7 +65,7 @@ def cifar10():
     return {
         'train_transformation': train_transformation,
         'eval_transformation': eval_transformation,
-        'datadir': '../data_local/images/cifar/cifar10/by-image',
+        'datadir': './data_local/images/cifar/cifar10/by-image',
         'num_classes': 10
     }
 
@@ -78,7 +78,7 @@ def two_moons():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'../data_local/synthetic',
+        'datadir': r'./data_local/synthetic',
         'num_class': 2
     }
 
@@ -91,7 +91,7 @@ def two_circles():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'../data_local/synthetic',
+        'datadir': r'./data_local/synthetic',
         'num_class': 2
     }
 
@@ -104,6 +104,6 @@ def four_spins():
     ]))
     return {
         'train_transformation': train_transformation,
-        'datadir': r'../data_local/synthetic',
+        'datadir': r'./data_local/synthetic',
         'num_class': 4
     }

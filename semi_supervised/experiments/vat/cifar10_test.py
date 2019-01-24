@@ -73,8 +73,8 @@ def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data
         'batch_size': base_batch_size * ngpu,
         'labeled_batch_size': base_labeled_batch_size * ngpu,
         'lr': base_lr * ngpu,
-        'labels': '../data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'.format(n_labels, data_seed) \
-                  if data_seed <= 10 else '../data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
+        'labels': './data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'.format(n_labels, data_seed) \
+                  if data_seed <= 10 else './data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
     }
     main.main_args = parse_dict_args(**adapted_args, **kwargs)
     main.main()

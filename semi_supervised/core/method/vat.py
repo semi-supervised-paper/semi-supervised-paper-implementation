@@ -262,7 +262,7 @@ class VAT(BasicMethod):
             save_best_checkpoint_to_file({
                 'epoch': epoch,
                 'global_step': global_step,
-                'semi-supervised-method': 'VAT',
+                'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,
@@ -276,7 +276,7 @@ class VAT(BasicMethod):
             save_checkpoint_to_file({
                 'epoch': epoch,
                 'global_step': global_step, 
-                'semi-supervised-method': 'VAT',
+                'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,

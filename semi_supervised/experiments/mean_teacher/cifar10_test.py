@@ -102,9 +102,9 @@ def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data
     }
 
     if not isinstance(n_labels, str):
-        adapted_args['labels'] = '../data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'\
+        adapted_args['labels'] = './data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'\
                                .format(n_labels, data_seed) \
-                               if data_seed <= 10 else '../data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'\
+                               if data_seed <= 10 else './data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'\
                                .format(n_labels, data_seed)
     main.main_args = parse_dict_args(**adapted_args, **kwargs)
     main.main()

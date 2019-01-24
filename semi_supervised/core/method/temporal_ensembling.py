@@ -265,7 +265,7 @@ class TemporalEnsembling(BasicMethod):
             fun_util.save_best_checkpoint_to_file({
                 'epoch': epoch,
                 'global_step': global_step,
-                'semi-supervised-method': 'TemporalEnsembling',
+                'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,
@@ -279,7 +279,7 @@ class TemporalEnsembling(BasicMethod):
             fun_util.save_checkpoint_to_file({
                 'epoch': epoch,
                 'global_step': global_step, 
-                'semi-supervised-method': 'TemporalEnsembling',
+                'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,
