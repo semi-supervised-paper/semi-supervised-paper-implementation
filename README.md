@@ -44,6 +44,8 @@ CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.mean_teacher.cifar
 
 to reproduce the result in [Mean teachers are better role models](https://arxiv.org/abs/1703.01780).
 
+*Note: This code does not be tested on multiple GPUs, so there is no guarantee that the result is good on multiple GPUs.*
+
 
 
 ## Results on CIFAR-10
