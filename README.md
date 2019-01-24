@@ -76,7 +76,7 @@ You can find out how to compute rampup_value and rampdown_value in semi_supervis
 
 The curve of the learning rate is shown in the figure below.
 
-<img src="semi_supervised/pics/LearningRate.png" alt="alt text" width="250" height="250">
+<img src="semi_supervised/pics/LearningRate.png" alt="alt text" width="350" height="250">
 
 ### Optimizer
 
@@ -86,7 +86,7 @@ Many methods in semi-supervised learning use Adam optimizer with beta1 = 0.9 and
 
 The curve of beta1 is shown in the figure below.
 
-<img src="semi_supervised/pics/Adam1.png" alt="alt text" width="250" height="250">
+<img src="semi_supervised/pics/Adam1.png" alt="alt text" width="350" height="250">
 
 ### Consistency Weight
 
@@ -96,7 +96,7 @@ Some methods use dynamically changed weight to balance supervised loss and unsup
 
 The curve of consistency weight is shown in the figure below.
 
-<img src="semi_supervised/pics/ConsistencyWeight.png" alt="alt text" width="250" height="250">
+<img src="semi_supervised/pics/ConsistencyWeight.png" alt="alt text" width="350" height="250">
 
 
 
