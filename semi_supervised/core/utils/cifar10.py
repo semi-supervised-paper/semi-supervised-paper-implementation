@@ -123,9 +123,12 @@ def produce_labeled_filename(X_train, y_train, mask_train, train_file_name, seed
     print("write to file {} labeled images".format(counter))
 
 
-X_train, y_train, X_test, y_test = load_cifar_10(unpack=True)
-for seed in range(1000, 1010):
-    np.random.seed(seed)
-    X_train_, y_train_, mask_train_, X_test_, y_test_, train_file_name_ = prepare_dataset(X_train, y_train, X_test, y_test, 10)
-    produce_labeled_filename(X_train_, y_train_, mask_train_, train_file_name_, seed)
+load_cifar_10(unpack=True)
+
+# # The following code is to generate labeled-data-file.
+# X_train, y_train, X_test, y_test = load_cifar_10(unpack=True)
+# for seed in range(1000, 1010):
+#     np.random.seed(seed)
+#     X_train_, y_train_, mask_train_, X_test_, y_test_, train_file_name_ = prepare_dataset(X_train, y_train, X_test, y_test, 10)
+#     produce_labeled_filename(X_train_, y_train_, mask_train_, train_file_name_, seed)
 
