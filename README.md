@@ -5,9 +5,9 @@ This repository is designed to reproduce the methods in some semi-supervised pap
 Before running the code, you need to install the packages according to the following command.
 
 ```python
-pip3 install https://download.pytorch.org/whl/cu90/torch-0.4.1-cp36-cp36m-win_amd64.whl
+pip3 install https://download.pytorch.org/whl/cu80/torch-0.4.1-cp36-cp36m-linux_x86_64.whl # pytorch version should be 0.4.1
 pip3 install torchvision
-pip3 install tensorflow #we use tensorboard in the project
+pip3 install tensorflow # we use tensorboard in the project
 ```
 
 
@@ -16,7 +16,7 @@ pip3 install tensorflow #we use tensorboard in the project
 
 ### CIFAR-10
 
-First, download CIFAR-10 python version from https://www.cs.toronto.edu/~kriz/cifar.html. Then, use the following command to unpack the data and generate labeled data path files. 
+Use the following command to unpack the data and generate labeled data path files. 
 
 ```python
 python3 -m semi_supervised.core.utils.cifar10
