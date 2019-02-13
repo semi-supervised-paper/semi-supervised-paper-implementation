@@ -101,9 +101,8 @@ def __create_parser():
     '''
     parser.add_argument('--epoch-decay-start', default=80, type=int, help='declare when to change lr')
     parser.add_argument('--beta1-2', default=0.5, type=float, metavar='ALPHA',
-                        help='beta2 in Adam (default: 0.5)') 
-    parser.add_argument('--vat-wt', default=1., type=float, metavar='ALPHA',
-                        help='balance vat loss and cross entropy loss') 
+                        help='beta2 in Adam (default: 0.5)')
+    parser.add_argument('--num-iter-per-epoch', default=400, type=int, help='declare how many iterations in an epoch')
 
     return parser
 

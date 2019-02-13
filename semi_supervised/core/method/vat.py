@@ -58,6 +58,7 @@ class VAT(BasicMethod):
             return decayed_lr
 
     def train_model(self):
+        self.train_iter_loader = iter(self.train_loader)
         for epoch in range(self.start_epoch, self.args.epochs):
             print("epoch {e}".format(e=epoch))
             start = time.time()
@@ -85,9 +86,8 @@ class VAT(BasicMethod):
     def get_params():
         return {
             'method': METHOD_VAT,
-            'epoch_decay_start': 80,
-            'beta1_2': 0.5,
-            'vat_wt': 1.
+            'epoch_decay_start': 460,
+            'beta1_2': 0.5
         }
 
     def _train_one_epoch(self, epoch):
@@ -107,7 +107,13 @@ class VAT(BasicMethod):
         self.model.train()
 
         total_data_size, total_labeled_size = 0, 0
-        for i, (input, target) in enumerate(self.train_loader):
+        for i in range(self.args.num_iter_per_epoch):
+        #   for i, (input, target) in enumerate(self.train_loader):
+            try:
+                input, target = next(self.train_iter_loader)
+            except StopIteration:
+                dataloader_iterator = iter(self.train_iter_loader)
+                input, target = next(dataloader_iterator)
             if isinstance(input, tuple) or isinstance(input, list):
                 input_var = torch.autograd.Variable(input[0])
             else:
@@ -133,7 +139,7 @@ class VAT(BasicMethod):
                 output_1 = self.model(input_var[input_labeled_index])
                 loss_ce = self.loss_ce(output_1, target_var[input_labeled_index])
 
-            loss_vat = self.args.vat_wt * self.loss_vat(self.model, input_var[input_unlabeled_index])
+            loss_vat = self.loss_vat(self.model, input_var[input_unlabeled_index])
 
             if i % 50 == 0:
                 print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, weighted_loss_vat = {vat}"

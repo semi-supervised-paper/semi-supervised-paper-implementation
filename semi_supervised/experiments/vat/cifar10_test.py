@@ -26,14 +26,11 @@ def parameters():
         'eval_subdir': 'test',
 
         # Data sampling
-        'base_batch_size': 100,
-        'base_labeled_batch_size': -1,
+        'base_batch_size': 160,
+        'base_labeled_batch_size': 32,
 
         # Architecture
-        'arch': 'convsmallcifar',
-
-        'rampup_epoch': 80,
-        'rampdown_epoch': 50,
+        'arch': 'convlargecifar',
 
         'base_lr': 0.001,
         'topk': 5,
@@ -42,7 +39,7 @@ def parameters():
     }
 
     # 4000 labels:
-    for data_seed in range(1000, 1001):
+    for data_seed in range(1, 2):
         yield {
             **defaults,
             'title': '4000-label cifar-10',
@@ -73,8 +70,7 @@ def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data
         'batch_size': base_batch_size * ngpu,
         'labeled_batch_size': base_labeled_batch_size * ngpu,
         'lr': base_lr * ngpu,
-        'labels': './data_local/labels/cifar10/{}_balanced_labels/{:02d}.txt'.format(n_labels, data_seed) \
-                  if data_seed <= 10 else './data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
+        'labels': './data_local/labels/cifar10/{}_balanced_labels/{:d}.txt'.format(n_labels, data_seed)
     }
     main.main_args = parse_dict_args(**adapted_args, **kwargs)
     main.main()
