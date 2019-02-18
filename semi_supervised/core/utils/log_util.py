@@ -132,7 +132,6 @@ class GenericCSV(object):
         self.fout.flush()
 
     def add_data(self, *values):
-        print(values)
         assert len(values) == len(self.fields)
         strings = [v if isinstance(v, str) else '%g' % v for v in values]
         self.fout.write(",".join(strings) + '\n')

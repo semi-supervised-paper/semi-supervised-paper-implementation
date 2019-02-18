@@ -45,17 +45,17 @@ def parameters():
             'title': '4000-label cifar-10',
             'n_labels': 4000,
             'data_seed': data_seed,
-            'epochs': 120
+            'epochs': 500
         }
 
     # 1000 labels:
-    for data_seed in range(1000, 1001):
+    for data_seed in range(1, 2):
         yield {
             **defaults,
             'title': '1000-label cifar-10',
             'n_labels': 1000,
             'data_seed': data_seed,
-            'epochs': 120
+            'epochs': 500
         }
 
 

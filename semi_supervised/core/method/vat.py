@@ -24,7 +24,7 @@ class VAT(BasicMethod):
         self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
 
         self.loss_ce = torch.nn.CrossEntropyLoss(ignore_index=DATA_NO_LABEL).cuda()
-        self.loss_vat = VATLoss()
+        self.loss_vat = VATLoss(self.args.eps)
 
         self.map = dict.fromkeys(['Epoch', 'EpochTime', 'TrainLoss', 'TestLoss', 'TestAccuracy',
                                   'TrainSupervisedLoss', 'TrainConsisencyLoss', 'TrainUnsupervisedLoss',
@@ -87,7 +87,8 @@ class VAT(BasicMethod):
         return {
             'method': METHOD_VAT,
             'epoch_decay_start': 460,
-            'beta1_2': 0.5
+            'beta1_2': 0.5,
+            'eps': 8.0
         }
 
     def _train_one_epoch(self, epoch):
@@ -112,8 +113,8 @@ class VAT(BasicMethod):
             try:
                 input, target = next(self.train_iter_loader)
             except StopIteration:
-                dataloader_iterator = iter(self.train_iter_loader)
-                input, target = next(dataloader_iterator)
+                self.train_iter_loader = iter(self.train_iter_loader)
+                input, target = next(self.train_iter_loader)
             if isinstance(input, tuple) or isinstance(input, list):
                 input_var = torch.autograd.Variable(input[0])
             else:
