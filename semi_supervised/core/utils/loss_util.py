@@ -20,8 +20,8 @@ class VATLoss(torch.nn.Module):
         # prepare random unit tensor
         d = torch.randn(x.shape).to(x.device)
 
-        d /= (1e-12 + torch.max(torch.abs(d), keepdims=True))
-        d /= torch.sqrt(1e-6 + torch.sum(d ** 2, keepdims=True))
+        d /= (1e-12 + torch.max(torch.abs(d)))
+        d /= torch.sqrt(1e-6 + torch.sum(d ** 2))
 
         with disable_tracking_bn_stats(model):
             with torch.no_grad():
@@ -33,7 +33,7 @@ class VATLoss(torch.nn.Module):
                 adv_distance = kl_div(F.log_softmax(pred_hat, dim=1), pred)
                 adv_distance.backward()
                 d = d.grad
-                d = d / torch.sqrt(torch.sum(d ** 2, keepdims=True))
+                d = d / torch.sqrt(torch.sum(d ** 2))
                 model.zero_grad()
     
             # calc LDS

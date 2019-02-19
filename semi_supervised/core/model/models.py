@@ -4,6 +4,7 @@ from .resnet_module import ShakeShakeBlock, BottleneckBlock
 from .synthetic_net import SyntheticNet
 from .simple_model import SimpleModel
 from .conv_small import ConvSmallCifar, ConvSmallSVHN
+from .conv_large import ConvLargeCifar
 
 
 @export
@@ -24,6 +25,13 @@ def simplenet(pretrained=False, **kwargs):
 def convsmallcifar(pretrained=False, **kwargs):
     assert not pretrained
     model = ConvSmallCifar(**kwargs)
+    return model
+
+
+@export
+def convlargecifar(pretrained=False, **kwargs):
+    assert not pretrained
+    model = ConvLargeCifar(**kwargs)
     return model
 
 

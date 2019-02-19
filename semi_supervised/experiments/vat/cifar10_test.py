@@ -39,7 +39,7 @@ def parameters():
     }
 
     # 4000 labels:
-    for data_seed in range(1, 2):
+    for data_seed in range(1000, 1001):
         yield {
             **defaults,
             'title': '4000-label cifar-10',
@@ -49,7 +49,7 @@ def parameters():
         }
 
     # 1000 labels:
-    for data_seed in range(1, 2):
+    for data_seed in range(1000, 1001):
         yield {
             **defaults,
             'title': '1000-label cifar-10',

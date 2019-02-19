@@ -113,7 +113,7 @@ class VAT(BasicMethod):
             try:
                 input, target = next(self.train_iter_loader)
             except StopIteration:
-                self.train_iter_loader = iter(self.train_iter_loader)
+                self.train_iter_loader = iter(self.train_loader)
                 input, target = next(self.train_iter_loader)
             if isinstance(input, tuple) or isinstance(input, list):
                 input_var = torch.autograd.Variable(input[0])
