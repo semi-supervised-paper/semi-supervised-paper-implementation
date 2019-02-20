@@ -48,15 +48,15 @@ def parameters():
             'epochs': 500
         }
 
-    # 1000 labels:
-    for data_seed in range(1000, 1001):
-        yield {
-            **defaults,
-            'title': '1000-label cifar-10',
-            'n_labels': 1000,
-            'data_seed': data_seed,
-            'epochs': 500
-        }
+    # # 1000 labels:
+    # for data_seed in range(1000, 1001):
+    #     yield {
+    #         **defaults,
+    #         'title': '1000-label cifar-10',
+    #         'n_labels': 1000,
+    #         'data_seed': data_seed,
+    #         'epochs': 500
+    #     }
 
 
 def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data_seed, **kwargs):

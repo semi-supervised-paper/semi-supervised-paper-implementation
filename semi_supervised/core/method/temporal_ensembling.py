@@ -19,11 +19,6 @@ class TemporalEnsembling(BasicMethod):
                  args):
         super(TemporalEnsembling, self).__init__(train_loader, eval_loader, num_classes, args)
 
-        self.model = self.create_model(ema=False, args=args)
-        print(fun_util.parameters_string(self.model))
-
-        self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
-
         self.loss_ce = torch.nn.CrossEntropyLoss(reduction='sum', ignore_index=DATA_NO_LABEL).cuda()
         self.loss_pi = loss_util.softmax_mse_loss
 

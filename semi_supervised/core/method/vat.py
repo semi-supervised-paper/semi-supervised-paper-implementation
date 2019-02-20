@@ -7,7 +7,7 @@ import torch
 from .basic_method import BasicMethod
 from ..utils.loss_util import VATLoss
 from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
-from ..utils.fun_util import accuracy, save_checkpoint_to_file, save_best_checkpoint_to_file, parameters_string
+from ..utils.fun_util import accuracy, save_checkpoint_to_file, save_best_checkpoint_to_file
 from ..utils.constant import DATA_NO_LABEL, METHOD_VAT
 
 
@@ -18,10 +18,6 @@ class VAT(BasicMethod):
                  num_classes,
                  args):
         super(VAT, self).__init__(train_loader, eval_loader, num_classes, args)
-        self.model = self.create_model(ema=False, args=args)
-        print(parameters_string(self.model))
-
-        self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
 
         self.loss_ce = torch.nn.CrossEntropyLoss(ignore_index=DATA_NO_LABEL).cuda()
         self.loss_vat = VATLoss(self.args.eps)

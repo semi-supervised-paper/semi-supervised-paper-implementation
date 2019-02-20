@@ -17,11 +17,6 @@ class MeanTeacher(BasicMethod):
                  num_classes,
                  args):
         super(MeanTeacher, self).__init__(train_loader, eval_loader, num_classes, args)
-        self.model = self.create_model(ema=False, args=args)
-        self.ema_model = self.create_model(ema=True, args=args)
-        print(fun_util.parameters_string(self.model))
-
-        self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
 
         self.loss_supervised = torch.nn.CrossEntropyLoss(reduction='sum', ignore_index=DATA_NO_LABEL).cuda()
         self.loss_consistency = loss_util.softmax_mse_loss
@@ -331,6 +326,7 @@ class MeanTeacher(BasicMethod):
                 'global_step': global_step,
                 'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
+                'ema_state_dict': self.ema_model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,
                 'top5_validate': top5_validate,
@@ -345,6 +341,7 @@ class MeanTeacher(BasicMethod):
                 'global_step': global_step,
                 'semi-supervised-method': self.args.method,
                 'state_dict': self.model.state_dict(),
+                'ema_state_dict': self.ema_model.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'top1_validate': top1_validate,
                 'top5_validate': top5_validate,
@@ -362,6 +359,7 @@ class MeanTeacher(BasicMethod):
             self.best_top1_validate = checkpoint['best_top1_validate']
             self.best_top5_validate = checkpoint['best_top5_validate']
             self.model.load_state_dict(checkpoint['state_dict'])
+            self.ema_model.load_state_dict(checkpoint['ema_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint '{}' (epoch {}) "
                   "best_top1_validate = {}, best_top5_validate = {}, "

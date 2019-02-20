@@ -2,6 +2,8 @@ import torch
 from abc import ABCMeta, abstractmethod
 from ..model import models
 from ..utils.log_util import TensorboardLogger
+from ..utils.fun_util import parameters_string
+from ..utils import constant
 
 
 class BasicMethod(metaclass=ABCMeta):
@@ -16,6 +18,14 @@ class BasicMethod(metaclass=ABCMeta):
         self.args = args
         self.train_loader, self.eval_loader = train_loader, eval_loader
         self.global_step = 0
+
+        self.model = self.create_model(False, args=args)
+        print(parameters_string(self.model))
+
+        if args.method == constant.METHOD_MEAN_TEACHER:
+            self.ema_model = self.create_model(ema=True, args=args)
+
+        self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
 
         if self.args.resume:
             self._load_checkpoint(self.args.resume)
