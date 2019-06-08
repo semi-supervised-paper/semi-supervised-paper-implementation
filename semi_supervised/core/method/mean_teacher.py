@@ -25,13 +25,8 @@ class MeanTeacher(BasicMethod):
                                   'TrainSupervisedLoss', 'TrainConsisencyLoss', 'TrainUnsupervisedLoss',
                                   'LearningRate'])
 
-        n_labels = re.findall(r"(\d+)_balanced_labels", str(args.labels))
-        if len(n_labels) == 0:
-            labels_str = "all_labels"
-        else:
-            labels_str = str(n_labels[0])
         self.training_csv = GenericCSV(os.path.join(self.result_folder, 'training_label_{lb}_seed_{se}.csv'
-                                                    .format(lb=labels_str, se=args.seed)),
+                                                    .format(lb=self.labels_str, se=args.seed)),
                                        *list(self.map.keys()))
 
     def adjust_optimizer_params(self, optimizer, epoch):
@@ -121,6 +116,9 @@ class MeanTeacher(BasicMethod):
             else:
                 input = input_pack
                 input2 = input_pack
+
+            input = self.zca(input)
+            input2 = self.zca(input2)
             input_1_var = torch.autograd.Variable(input)
             input_2_var = torch.autograd.Variable(input2, requires_grad=False)
 
@@ -255,7 +253,7 @@ class MeanTeacher(BasicMethod):
         with torch.no_grad():
             for i, (input, target) in enumerate(self.eval_loader):
                 meters.update('data_time', time.time() - end)
-
+                input = self.zca(input)
                 input_var = torch.autograd.Variable(input)
                 try:
                     target_var = torch.autograd.Variable(target.cuda(async=True))

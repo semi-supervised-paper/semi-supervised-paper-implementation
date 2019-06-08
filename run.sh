@@ -1,0 +1,1 @@
+python3 -m semi_supervised.experiments.temporal_ensembling.cifar10_test

@@ -19,8 +19,8 @@ import torch
 def parameters():
     defaults = {
         # Technical details
-        'workers': 2,
-        'checkpoint_epochs': 50,
+        'workers': 4,
+        'checkpoint_epochs': 100,
 
         # Data
         'dataset': 'cifar10',
@@ -40,6 +40,8 @@ def parameters():
         'base_lr': 0.003,
         'topk': 5,
 
+        'tflog': False,
+
         **TemporalEnsembling.get_params()
     }
 
@@ -56,37 +58,39 @@ def parameters():
     #
 
     # # 1000 labels:
-    # for data_seed in range(1000, 1001):
-    #     yield {
-    #         **defaults,
-    #         'title': '1000-label cifar-10',
-    #         'n_labels': 1000,
-    #         'consistency': 100.0 * 1000. / 50000.,
-    #         'data_seed': data_seed,
-    #         'epochs': 300
-    #     }
+    for data_seed in range(1008, 1010):
+         yield {
+             **defaults,
+             'title': '1000-label cifar-10',
+             'n_labels': 1000,
+             'consistency': 100.0 * 1000. / 50000.,
+             'data_seed': data_seed,
+             'epochs': 300
+         }
 
-    # # 2000 labels:
-    # for data_seed in range(1000, 1001):
-    #     yield {
-    #         **defaults,
-    #         'title': '2000-label cifar-10',
-    #         'n_labels': 2000,
-    #         'consistency': 100.0 * 2000. / 50000.,
-    #         'data_seed': data_seed,
-    #         'epochs': 300
-    #     }
+    '''
+     # 2000 labels:
+    for data_seed in range(1004, 1010):
+         yield {
+             **defaults,
+             'title': '2000-label cifar-10',
+             'n_labels': 2000,
+             'consistency': 100.0 * 2000. / 50000.,
+             'data_seed': data_seed,
+             'epochs': 300
+         }
+    '''
 
     # all labels:
-    for data_seed in range(1000, 1001):
-        yield {
-            **defaults,
-            'title': 'all-label cifar-10',
-            'n_labels': "all",
-            'consistency': 100.0,
-            'data_seed': data_seed,
-            'epochs': 300
-        }
+    #for data_seed in range(1000, 1001):
+    #    yield {
+    #        **defaults,
+    #        'title': 'all-label cifar-10',
+    #        'n_labels': "all",
+    #        'consistency': 100.0,
+    #        'data_seed': data_seed,
+    #        'epochs': 300
+    #    }
 
 
 def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data_seed, **kwargs):

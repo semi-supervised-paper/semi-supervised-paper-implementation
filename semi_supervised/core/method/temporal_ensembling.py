@@ -1,6 +1,5 @@
 import os
 import time
-import re
 
 import torch
 
@@ -8,6 +7,7 @@ from .basic_method import BasicMethod
 from ..utils import fun_util
 from ..utils import loss_util
 from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
+from ..utils.data_util import ZCATransformation
 from ..utils.constant import DATA_NO_LABEL, METHOD_TEMPORAL_ENSEMBLING
 
 
@@ -26,13 +26,8 @@ class TemporalEnsembling(BasicMethod):
                                   'TrainSupervisedLoss', 'TrainPiLoss', 'TrainUnsupervisedLoss',
                                   'LearningRate'])
 
-        n_labels = re.findall(r"/(\d+)_balanced_labels", str(args.labels))
-        if len(n_labels) == 0:
-            labels_str = "all_labels"
-        else:
-            labels_str = str(n_labels[0])
         self.training_csv = GenericCSV(os.path.join(self.result_folder, 'training_label_{lb}_seed_{se}.csv'
-                                                    .format(lb=labels_str, se=args.seed)),
+                                                    .format(lb=self.labels_str, se=args.seed)),
                                        *list(self.map.keys()))
 
     def adjust_optimizer_params(self, optimizer, epoch):
@@ -109,7 +104,11 @@ class TemporalEnsembling(BasicMethod):
 
         self.model.train()
         total_data_size, total_labeled_size = 0, 0
-        for i, ((input, input2), target) in enumerate(self.train_loader):
+        for i, (input_pack, target) in enumerate(self.train_loader):
+            (input, input2) = input_pack
+            input = self.zca(input)
+            input2 = self.zca(input2)
+
             input_1_var = torch.autograd.Variable(input)
             input_2_var = torch.autograd.Variable(input2)
             try:
@@ -133,10 +132,6 @@ class TemporalEnsembling(BasicMethod):
 
             loss_ce = self.loss_ce(output_1, target_var) / minibatch_size
             loss_pi = cons_weight * self.loss_pi(output_1, output_2) / minibatch_size
-
-            if i % 50 == 0:
-                print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, weighted_loss_pi = {pi}"
-                      .format(ls=labeled_minibatch_size, ms=minibatch_size, ce=loss_ce, pi=loss_pi.item()))
 
             loss = loss_ce + loss_pi
             losses_all.update(loss.item())
@@ -169,11 +164,11 @@ class TemporalEnsembling(BasicMethod):
                   'Loss_All_Epoch: {Loss_All_Epoch}, Train_Top1_Epoch: {Train_Top1_Epoch},'
                   'Train_Top5_Epoch: {Train_Top5_Epoch}, Train_Error1_Epoch: {Train_Error1_Epoch}, '
                   'Train_Error5_Epoch: {Train_Error5_Epoch}, Learning_Rate: {lr}'.format(
-                time=time.time() - start,
-                e=epoch, Loss_CE_Epoch=losses_ce.avg, Loss_Consisency_Epoch=losses_pi.avg,
-                Loss_All_Epoch=losses_all.avg, Train_Top1_Epoch=top1.avg, Train_Top5_Epoch=top5.avg,
-                Train_Error1_Epoch=100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
-                lr=lr
+                    time=time.time() - start,
+                    e=epoch, Loss_CE_Epoch=losses_ce.avg, Loss_Consisency_Epoch=losses_pi.avg,
+                    Loss_All_Epoch=losses_all.avg, Train_Top1_Epoch=top1.avg, Train_Top5_Epoch=top5.avg,
+                    Train_Error1_Epoch=100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
+                    lr=lr
             ))
             super(TemporalEnsembling, self).log_to_tf("Loss_CE_Epoch", losses_ce.avg, epoch, True)
             super(TemporalEnsembling, self).log_to_tf("Loss_Consisency_Epoch", losses_pi.avg, epoch, True)
@@ -206,6 +201,7 @@ class TemporalEnsembling(BasicMethod):
             for i, (input, target) in enumerate(self.eval_loader):
                 meters.update('data_time', time.time() - end)
 
+                input = self.zca(input)
                 input_var = torch.autograd.Variable(input)
                 try:
                     target_var = torch.autograd.Variable(target.cuda(async=True))
@@ -257,6 +253,9 @@ class TemporalEnsembling(BasicMethod):
                          epoch, global_step, top1_validate, top5_validate,
                          best_top1_validate, best_top5_validate,
                          class_loss_validate, is_best):
+        if not self.args.tflog:
+            return
+
         if is_best:
             fun_util.save_best_checkpoint_to_file({
                 'epoch': epoch,
@@ -286,6 +285,9 @@ class TemporalEnsembling(BasicMethod):
             }, epoch, is_best, self.result_folder)
 
     def _load_checkpoint(self, filepath):
+        if not self.args.tflog:
+            return
+
         if os.path.isfile(filepath):
             print("=> loading checkpoint '{}'".format(filepath))
             checkpoint = torch.load(filepath)

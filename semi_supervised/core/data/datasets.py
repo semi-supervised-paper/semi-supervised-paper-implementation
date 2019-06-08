@@ -4,6 +4,8 @@
 # 4.0 International License. To view a copy of this license, visit
 # http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to
 # Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+import scipy.io as sio
+import torch
 import torchvision.transforms as transforms
 from ..utils.fun_util import export
 from ..utils.data_util import TransformTwice, RandomTranslateWithReflect, ZCATransformation, pad_resize, hor_flip_tensor
@@ -39,6 +41,9 @@ def imagenet():
         'num_classes': 1000
     }
 
+# mat_contents = sio.loadmat('./data_local/zca_theano.mat')
+# transformation_matrix = torch.from_numpy(mat_contents['zca_matrix']).float()
+# transformation_mean = torch.from_numpy(mat_contents['zca_mean'][0]).float()
 
 @export
 def cifar10():
@@ -46,20 +51,14 @@ def cifar10():
     usage: datasets.__dict__['cifar10']
     :return: params of cifar10
     '''
-    import scipy.io as sio
-    import torch
-    mat_contents = sio.loadmat('./data_local/zca_theano.mat')
-    transformation_matrix = torch.from_numpy(mat_contents['zca_matrix']).float()
-    transformation_mean = torch.from_numpy(mat_contents['zca_mean'][0]).float()
+
     train_transformation = TransformTwice(transforms.Compose([
+        transforms.RandomCrop(32, padding=2, padding_mode='reflect'),
+        transforms.RandomHorizontalFlip(0.5),
         transforms.ToTensor(),
-        ZCATransformation(transformation_matrix, transformation_mean),
-        transforms.Lambda(lambda tensor : pad_resize(tensor, 2)),
-        transforms.Lambda(lambda tensor : hor_flip_tensor(tensor))
     ]))
     eval_transformation = transforms.Compose([
         transforms.ToTensor(),
-        ZCATransformation(transformation_matrix, transformation_mean)
     ])
 
     return {

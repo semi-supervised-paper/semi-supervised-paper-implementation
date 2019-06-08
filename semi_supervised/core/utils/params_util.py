@@ -71,6 +71,8 @@ def __create_parser():
                         help='train on cuda or not')
     parser.add_argument('--pretrained', dest='pretrained', action='store_true',
                         help='use pre-trained model')
+    parser.add_argument('--tflog', default=True, type=bool,
+                        help='log to tensorboard')
     parser.add_argument('--consistency', default=None, type=float, metavar='WEIGHT',
                         help='use consistency loss with given weight (default: None)')
 
@@ -125,6 +127,6 @@ def parse_dict_args(**kwargs):
                     for key, value in kwargs.items())
     cmdline_args = list(sum(kwargs_pairs, ()))
 
-    print("Using these command line args: %s".format(" ".join(cmdline_args)))
+    print("Using these command line args: {}".format(" ".join(cmdline_args)))
 
     return __create_parser().parse_args(cmdline_args)

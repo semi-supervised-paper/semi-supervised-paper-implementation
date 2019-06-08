@@ -11,6 +11,7 @@ import itertools
 import torch
 import os.path
 import numpy as np
+import torch.nn.functional as F
 
 from PIL import Image
 from torch.utils.data.sampler import Sampler
@@ -67,6 +68,33 @@ class RandomTranslateWithReflect:
         return new_image
 
 
+class DataPrefetcher():
+    def __init__(self, loader):
+        self.loader = iter(loader)
+        self.stream = torch.cuda.Stream()
+        self.preload()
+
+    def preload(self):
+        try:
+            self.next_input, self.next_target = next(self.loader)
+        except StopIteration:
+            self.next_input = None
+            self.next_target = None
+            return
+        with torch.cuda.stream(self.stream):
+            if isinstance(self.next_input, tuple):
+                self.next_input = (self.next_input[0].cuda(non_blocking=True), self.next_input[1].cuda(non_blocking=True))
+                self.next_input = (self.next_input[0].float(), self.next_input[1].float())
+            self.next_target = self.next_target.cuda(non_blocking=True)
+
+    def next(self):
+        torch.cuda.current_stream().wait_stream(self.stream)
+        input = self.next_input
+        target = self.next_target
+        self.preload()
+        return input, target
+
+
 class ZCATransformation(object):
     def __init__(self, transformation_matrix, transformation_mean):
         if transformation_matrix.size(0) != transformation_matrix.size(1):
@@ -82,12 +110,16 @@ class ZCATransformation(object):
         Returns:
             Tensor: Transformed image.
         """
-        if tensor.size(0) * tensor.size(1) * tensor.size(2) != self.transformation_matrix.size(0):
+        if tensor.size(1) * tensor.size(2) * tensor.size(3) != self.transformation_matrix.size(0):
             raise ValueError("tensor and transformation matrix have incompatible shape." +
                              "[{} x {} x {}] != ".format(*tensor.size()) +
                              "{}".format(self.transformation_matrix.size(0)))
-        flat_tensor = tensor.view(1, -1)
-        transformed_tensor = torch.mm(flat_tensor - self.transformation_mean, self.transformation_matrix)
+        batch = tensor.size(0)
+
+        flat_tensor = tensor.view(batch, -1)
+        transformed_tensor = torch.mm(flat_tensor - self.transformation_mean,
+                                       self.transformation_matrix)
+
         tensor = transformed_tensor.view(tensor.size())
         return tensor
 
@@ -308,7 +340,6 @@ def load_two_circles(data_dir):
 
 def pad_resize(tensor, pad):
     assert len(tensor.size()) == 3
-    import torch.nn.functional as F
     channel, xsize, ysize = tensor.size(0), tensor.size(1), tensor.size(2)
     tensor = tensor.unsqueeze(0)
     x_pad = F.pad(tensor, (pad, pad, pad, pad), mode='reflect')
@@ -336,3 +367,5 @@ def hor_flip_tensor(tensor):
         return tensor.flip([2])
     else:
         return tensor
+
+

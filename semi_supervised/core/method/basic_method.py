@@ -1,7 +1,12 @@
-import torch
+import re
+import scipy.io as sio
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
+
+import torch
 from ..model import models
 from ..utils.log_util import TensorboardLogger
+from ..utils.data_util import ZCATransformation
 from ..utils.fun_util import parameters_string
 from ..utils import constant
 
@@ -12,8 +17,23 @@ class BasicMethod(metaclass=ABCMeta):
                  eval_loader,
                  num_classes,
                  args):
-        self.result_folder = './logs/' + args.method
-        self.tensorboard_logger = TensorboardLogger(self.result_folder)
+
+        self.n_labels = re.findall(r"/(\d+)_balanced_labels", str(args.labels))
+        if len(self.n_labels) == 0:
+            self.labels_str = "all_labels"
+        else:
+            self.labels_str = str(self.n_labels[0])
+
+        self.result_folder = "{root}/{runner_name}/{run_idx}/{date:%Y-%m-%d_%H:%M:%S}".format(
+            root='results',
+            runner_name=args.method,
+            run_idx="{}_lables{}_seed{}".format(args.dataset, self.labels_str, args.seed),
+            date=datetime.now()
+        )
+
+        if args.tflog:
+            self.tensorboard_logger = TensorboardLogger(self.result_folder)
+
         self.num_classes = num_classes
         self.args = args
         self.train_loader, self.eval_loader = train_loader, eval_loader
@@ -27,6 +47,11 @@ class BasicMethod(metaclass=ABCMeta):
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), self.args.lr, betas=(0.9, 0.999), eps=1e-8)
 
+        mat_contents = sio.loadmat('./data_local/zca_cifar10.mat')
+        transformation_matrix = torch.from_numpy(mat_contents['zca_matrix']).float()
+        transformation_mean = torch.from_numpy(mat_contents['zca_mean'][0]).float()
+        self.zca = ZCATransformation(transformation_matrix, transformation_mean)
+
         if self.args.resume:
             self._load_checkpoint(self.args.resume)
         else:
@@ -34,8 +59,11 @@ class BasicMethod(metaclass=ABCMeta):
             self.start_epoch = args.start_epoch
 
     def log_to_tf(self, name, var, step, train):
-        name = "Train/" + name if train else "Test/" + name
-        self.tensorboard_logger.scalar_summary(name, var, step)
+        if self.args.tflog:
+            name = "Train/" + name if train else "Test/" + name
+            self.tensorboard_logger.scalar_summary(name, var, step)
+        else:
+            pass
 
     @abstractmethod
     def train_model(self):

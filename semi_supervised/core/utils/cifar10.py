@@ -4,7 +4,7 @@ import pickle
 import scipy.misc
 
 data_dir = 'data_raw'  # path of CIFAR-10 data_batch_{1, 2, 3, 4, 5}
-num_labels = 4000  # how many training data is labeled
+num_labels = 1000  # how many training data is labeled
 target_dir = './data_local/images/cifar/cifar10/by-image'  # path used to save CIFAR-10 images
 file_dir = './data_local/labels/cifar10'  # folder used to save path of unlabeled data
 
@@ -123,12 +123,12 @@ def produce_labeled_filename(X_train, y_train, mask_train, train_file_name, seed
     print("write to file {} labeled images".format(counter))
 
 
-load_cifar_10(unpack=True)
+#load_cifar_10(unpack=True)
 
 # # The following code is to generate labeled-data-file.
-# X_train, y_train, X_test, y_test = load_cifar_10(unpack=True)
-# for seed in range(1000, 1010):
-#     np.random.seed(seed)
-#     X_train_, y_train_, mask_train_, X_test_, y_test_, train_file_name_ = prepare_dataset(X_train, y_train, X_test, y_test, 10)
-#     produce_labeled_filename(X_train_, y_train_, mask_train_, train_file_name_, seed)
+X_train, y_train, X_test, y_test = load_cifar_10(unpack=True)
+for seed in range(1000, 1010):
+     np.random.seed(seed)
+     X_train_, y_train_, mask_train_, X_test_, y_test_, train_file_name_ = prepare_dataset(X_train, y_train, X_test, y_test, 10)
+     produce_labeled_filename(X_train_, y_train_, mask_train_, train_file_name_, seed)
 

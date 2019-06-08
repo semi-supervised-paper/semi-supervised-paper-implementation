@@ -1,0 +1,6 @@
+results/
+logs/
+test_logs/
+data_local/
+data_raw/
+*.pyc
