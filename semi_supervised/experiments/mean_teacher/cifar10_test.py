@@ -19,7 +19,7 @@ def parameters():
     defaults = {
         # Technical details
         'workers': 2,
-        'checkpoint_epochs': 50,
+        'checkpoint_epochs': 300,
 
         # Data
         'dataset': 'cifar10',
@@ -44,18 +44,18 @@ def parameters():
     }
 
     # # 4000 labels:
-    # for data_seed in range(1000, 1001):
-    #     yield {
-    #         **defaults,
-    #         'title': '4000-label cifar-10',
-    #         'n_labels': 4000,
-    #         'consistency': 100.0 * 4000. / 50000.,
-    #         'data_seed': data_seed,
-    #         'epochs': 300
-    #     }
+    for data_seed in range(1008, 1010):
+         yield {
+             **defaults,
+             'title': '4000-label cifar-10',
+             'n_labels': 4000,
+             'consistency': 100.0 * 4000. / 50000.,
+             'data_seed': data_seed,
+             'epochs': 300
+         }
 
     # # 1000 labels:
-    # for data_seed in range(1000, 1001):
+    # for data_seed in range(1000, 1010):
     #     yield {
     #         **defaults,
     #         'title': '1000-label cifar-10',
@@ -66,7 +66,7 @@ def parameters():
     #     }
     #
     # # all labels:
-    # for data_seed in range(1000, 1001):
+    # for data_seed in range(1000, 1010):
     #     yield {
     #         **defaults,
     #         'title': 'all-label cifar-10',
@@ -76,8 +76,9 @@ def parameters():
     #         'epochs': 300
     #     }
 
-    # 2000 labels:
-    for data_seed in range(1000, 1001):
+    # # 2000 labels:
+    '''
+    for data_seed in range(1000, 1010):
         yield {
             **defaults,
             'title': '2000-label cifar-10',
@@ -86,6 +87,7 @@ def parameters():
             'data_seed': data_seed,
             'epochs': 300
         }
+    '''
 
 
 def run(title, base_batch_size, base_labeled_batch_size, base_lr, n_labels, data_seed, **kwargs):

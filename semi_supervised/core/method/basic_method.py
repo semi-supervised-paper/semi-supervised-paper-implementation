@@ -1,4 +1,5 @@
 import re
+import os
 import scipy.io as sio
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
@@ -33,6 +34,8 @@ class BasicMethod(metaclass=ABCMeta):
 
         if args.tflog:
             self.tensorboard_logger = TensorboardLogger(self.result_folder)
+        else:
+            os.makedirs(self.result_folder, exist_ok=True)
 
         self.num_classes = num_classes
         self.args = args

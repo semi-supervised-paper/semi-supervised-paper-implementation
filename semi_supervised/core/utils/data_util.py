@@ -15,10 +15,62 @@ import torch.nn.functional as F
 
 from PIL import Image
 from torch.utils.data.sampler import Sampler
-from torchvision.datasets import ImageFolder
+from torchvision.datasets import ImageFolder, DatasetFolder
 from torch.utils.data import DataLoader
 
-from .constant import DATA_NO_LABEL, DATA_FOUR_SPINS, DATA_TWO_CIRCLES, DATA_TWO_MOONS
+from .constant import DATA_NO_LABEL, DATA_FOUR_SPINS, DATA_TWO_CIRCLES, DATA_TWO_MOONS, METHOD_TEMPORAL_ENSEMBLING
+
+
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
+
+
+class TempensDatasetFolder(DatasetFolder):
+    def __init__(self, root, loader, extensions=None, transform=None, target_transform=None, is_valid_file=None):
+        super(TempensDatasetFolder, self).__init__(root, loader, extensions, transform, target_transform, is_valid_file)
+
+    def __getitem__(self, index):
+        path, target = self.samples[index]
+        sample = self.loader(path)
+        if self.transform is not None:
+            sample = self.transform(sample)
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return sample, target, index
+
+
+def pil_loader(path):
+    # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+    with open(path, 'rb') as f:
+        img = Image.open(f)
+        return img.convert('RGB')
+
+
+def accimage_loader(path):
+    import accimage
+    try:
+        return accimage.Image(path)
+    except IOError:
+        # Potentially a decoding problem, fall back to PIL.Image
+        return pil_loader(path)
+
+
+def default_loader(path):
+    from torchvision import get_image_backend
+    if get_image_backend() == 'accimage':
+        return accimage_loader(path)
+    else:
+        return pil_loader(path)
+
+
+class TempensImageFolder(TempensDatasetFolder):
+    def __init__(self, root, transform=None, target_transform=None,
+                 loader=default_loader, is_valid_file=None):
+        super(TempensImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+                                                 transform=transform,
+                                                 target_transform=target_transform,
+                                                 is_valid_file=is_valid_file)
+        self.imgs = self.samples
 
 
 class RandomTranslateWithReflect:
@@ -106,19 +158,18 @@ class ZCATransformation(object):
     def __call__(self, tensor):
         """
         Args:
-            tensor (Tensor): Tensor image of size (C, H, W) to be whitened.
+            tensor (Tensor): Tensor image of size (N, C, H, W) to be whitened.
         Returns:
             Tensor: Transformed image.
         """
         if tensor.size(1) * tensor.size(2) * tensor.size(3) != self.transformation_matrix.size(0):
             raise ValueError("tensor and transformation matrix have incompatible shape." +
-                             "[{} x {} x {}] != ".format(*tensor.size()) +
+                             "[{} x {} x {}] != ".format(*tensor[0].size()) +
                              "{}".format(self.transformation_matrix.size(0)))
         batch = tensor.size(0)
 
         flat_tensor = tensor.view(batch, -1)
-        transformed_tensor = torch.mm(flat_tensor - self.transformation_mean,
-                                       self.transformation_matrix)
+        transformed_tensor = torch.mm(flat_tensor - self.transformation_mean, self.transformation_matrix)
 
         tensor = transformed_tensor.view(tensor.size())
         return tensor
@@ -161,8 +212,7 @@ class TwoStreamBatchSampler(Sampler):
         return (
             primary_batch + secondary_batch
             for (primary_batch, secondary_batch)
-            in  zip(grouper(primary_iter, self.primary_batch_size),
-                    grouper(secondary_iter, self.secondary_batch_size))
+            in zip(grouper(primary_iter, self.primary_batch_size), grouper(secondary_iter, self.secondary_batch_size))
         )
 
     def __len__(self):
@@ -210,7 +260,7 @@ def relabel_dataset(dataset, labels):
     return labeled_idxs, unlabeled_idxs
 
 
-def create_data_loaders_from_data(data_x_train, data_y_train, data_x_test, data_y_test, labeled_mask, train_transformation, args):
+def create_data_loaders_from_data(data_x_train, data_y_train, data_x_test, data_y_test, labeled_mask, args):
     if len(data_x_train.shape) == 4 and data_x_train.shape[-1] == 1 and data_x_train.shape[-2] == 1:
         data_x_train = data_x_train.reshape(data_x_train.shape[0], data_x_train.shape[1])
 
@@ -243,7 +293,10 @@ def create_data_loaders_from_dir(train_transformation, eval_transformation, data
     traindir = os.path.join(datadir, args.train_subdir)
     evaldir = os.path.join(datadir, args.eval_subdir)
 
-    dataset = ImageFolder(traindir, train_transformation)
+    if args.method == METHOD_TEMPORAL_ENSEMBLING:
+        dataset = TempensImageFolder(traindir, train_transformation)
+    else:
+        dataset = ImageFolder(traindir, train_transformation)
 
     if args.labels:
         with open(args.labels) as f:

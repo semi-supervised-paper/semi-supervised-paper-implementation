@@ -10,7 +10,7 @@
 import sys
 from ...core.utils.params_util import parse_dict_args
 from ...core.utils.constant import LOG_TRAIN_PREFIX
-from ...core.method.temporal_ensembling import TemporalEnsembling
+from ...core.method.tempens import TemporalEnsembling
 from ...core import main
 
 import torch
@@ -45,44 +45,42 @@ def parameters():
         **TemporalEnsembling.get_params()
     }
 
-    # 4000 labels:
-    # for data_seed in range(1003, 1004):
+    # # 4000 labels:
+    # for data_seed in range(1000, 1010):
     #     yield {
     #         **defaults,
     #         'title': '4000-label cifar-10',
     #         'n_labels': 4000,
-    #         'consistency': 100.0 * 4000. / 50000.,
+    #         'consistency': 30.0 * 4000. / 50000.,
     #         'data_seed': data_seed,
     #         'epochs': 300
     #     }
-    #
 
     # # 1000 labels:
-    for data_seed in range(1008, 1010):
+    for data_seed in range(1006, 1010):
          yield {
              **defaults,
              'title': '1000-label cifar-10',
              'n_labels': 1000,
-             'consistency': 100.0 * 1000. / 50000.,
+             'consistency': 30.0 * 1000. / 50000.,
              'data_seed': data_seed,
              'epochs': 300
          }
 
-    '''
-     # 2000 labels:
-    for data_seed in range(1004, 1010):
+    #
+    #  #2000 labels:
+    for data_seed in range(1008, 1010):
          yield {
              **defaults,
              'title': '2000-label cifar-10',
              'n_labels': 2000,
-             'consistency': 100.0 * 2000. / 50000.,
+             'consistency': 30.0 * 2000. / 50000.,
              'data_seed': data_seed,
              'epochs': 300
          }
-    '''
 
-    # all labels:
-    #for data_seed in range(1000, 1001):
+    # # all labels:
+    # for data_seed in range(1000, 1010):
     #    yield {
     #        **defaults,
     #        'title': 'all-label cifar-10',

@@ -4,7 +4,7 @@ import re
 
 import torch
 from .basic_method import BasicMethod
-from ..utils import  fun_util
+from ..utils import fun_util
 from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
 from ..utils.constant import DATA_NO_LABEL, METHOD_MEAN_TEACHER
 from ..utils import loss_util

@@ -18,7 +18,7 @@ def parameters():
     defaults = {
         # Technical details
         'workers': 2,
-        'checkpoint_epochs': 50,
+        'checkpoint_epochs': 300,
 
         # Data
         'dataset': 'cifar10',
@@ -34,6 +34,8 @@ def parameters():
 
         'base_lr': 0.001,
         'topk': 5,
+
+        'tflog': True,
 
         **VAT.get_params()
     }

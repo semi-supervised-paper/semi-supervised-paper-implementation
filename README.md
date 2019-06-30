@@ -5,8 +5,8 @@ This repository is designed to reproduce the methods in some semi-supervised pap
 Before running the code, you need to install the packages according to the following command.
 
 ```python
-pip3 install https://download.pytorch.org/whl/cu80/torch-0.4.1-cp36-cp36m-linux_x86_64.whl # pytorch version should be 0.4.1
-pip3 install torchvision
+pip3 install torch==1.1.0
+pip3 install torchvision==0.3.0
 pip3 install tensorflow # we use tensorboard in the project
 ```
 
@@ -26,25 +26,19 @@ python3 -m semi_supervised.core.utils.cifar10
 
 ## Run on CIFAR-10
 
-To run on CIFAR-10, 
-
-run
+To reproduce the result in [Temporal Ensembling for Semi-Supervised Learning](https://arxiv.org/abs/1610.02242), run
 
 ```python
 CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.temporal_ensembling.cifar10_test
 ```
 
-to reproduce the result in [Temporal Ensembling for Semi-Supervised Learning](https://arxiv.org/abs/1610.02242).
-
-run
+To reproduce the result in [Mean teachers are better role models](https://arxiv.org/abs/1703.01780). run
 
 ```python
 CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.mean_teacher.cifar10_test
 ```
 
-to reproduce the result in [Mean teachers are better role models](https://arxiv.org/abs/1703.01780).
-
-*Note: This code does not be tested on multiple GPUs, so there is no guarantee that the result is good on multiple GPUs.*
+*Note: This code does not be tested on multiple GPUs, so there is no guarantee that the result is satisfying on multiple GPUs.*
 
 
 
@@ -52,15 +46,14 @@ to reproduce the result in [Mean teachers are better role models](https://arxiv.
 
 | Number of Labeled Data                                       | 1000      | 2000      | 4000      | All labels |
 | ------------------------------------------------------------ | --------- | --------- | --------- | ---------- |
-| Pi model (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 72.64     | **81.98** | 86.8      | 93.94      |
-| **Pi model (this repository)**                              | **74.35** | 81.68     | **87.22** | **94.26**  |
-| Mean Teacher (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 78.45     | 84.27     | **87.69** | 94.06      |
-| **Mean Teacher (this repository)**                           | **79.41** | **85.56** | 86.21     | **94.3**   |
+| Pi model (from [SNTG](http://openaccess.thecvf.com/content_cvpr_2018/papers/Luo_Smooth_Neighbors_on_CVPR_2018_paper.pdf)) | 68.35 $\pm$ 1.20     | 82.43 $\pm$ 0.44 | 87.64‬$\pm$ 0.31 | 94.44 $\pm$ 0.10 |       |
+| **Pi model (this repository)** | 69.615 $\pm$ 1.3013 | 82.92 $\pm$ 0.532 | 87.925 $\pm$ 0.227 | --- |
+| Tempens model (from [SNTG](http://openaccess.thecvf.com/content_cvpr_2018/papers/Luo_Smooth_Neighbors_on_CVPR_2018_paper.pdf)) | 76.69 $\pm$ 1.01 | 84.36 $\pm$ 0.39 | 87.84 $\pm$ 0.24 | 94.4 $\pm$ 0.10 | 
+| **Tempens model (this repository)**                              | 78.517 $\pm$ 1.1653 | 84.757 $\pm$ 0.42445 | 88.166 $\pm$ 0.24324 | 94.72 $\pm$ 0.14758  |
+| Mean Teacher (from [Mean teachers are better role models](https://arxiv.org/abs/1703.01780)) | 78.45     | 84.27     | 87.69 | 94.06      |
+| **Mean Teacher (this repository)**                           | 80.421 $\pm$ 1.0264 | 85.236 $\pm$ 0.655 | 88.435 $\pm$ 0.311     | 94.482 $\pm$ 0.1086   |
 
-It should be noted that the difference in results may come from the following two reasons:
-
-1. Which images were selected as labeled data. This has a big impact on the results.
-2. Seed set in experiments. In this experiment, seed is set to be 1000.
+We report the mean and standard deviation of 10 runs using different random seeds(1000 - 1009).
 
 
 
@@ -104,7 +97,7 @@ The curve of consistency weight is shown in the figure below.
 
 - [x] Mean Teacher
 - [x] Pi Model
-- [ ] Temporal Ensembling Model
+- [x] Temporal Ensembling Model
 - [ ] VAT
 - [ ] More....
 
@@ -115,6 +108,5 @@ The curve of consistency weight is shown in the figure below.
 1.  [Mean teachers are better role models](https://github.com/CuriousAI/mean-teacher)
 2.  [Temporal Ensembling for Semi-Supervised Learning](https://github.com/smlaine2/tempens)
 3.  [Good Semi-Supervised Learning that Requires a Bad GAN](https://github.com/kimiyoung/ssl_bad_gan)
-
 4.  [Smooth Neighbors on Teacher Graphs for Semi-supervised Learning](https://github.com/xinmei9322/SNTG)
 

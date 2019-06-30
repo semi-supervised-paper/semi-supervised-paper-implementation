@@ -71,10 +71,13 @@ def __create_parser():
                         help='train on cuda or not')
     parser.add_argument('--pretrained', dest='pretrained', action='store_true',
                         help='use pre-trained model')
-    parser.add_argument('--tflog', default=True, type=bool,
+    parser.add_argument('--tflog', default=False, type=bool,
                         help='log to tensorboard')
     parser.add_argument('--consistency', default=None, type=float, metavar='WEIGHT',
                         help='use consistency loss with given weight (default: None)')
+    parser.add_argument('--prediction_decay', default=0.6, type=float, metavar='WEIGHT',
+                        help='Ensemble prediction decay constant')
+
 
     '''
     parameters used in SGD

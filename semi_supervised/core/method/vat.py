@@ -1,9 +1,10 @@
 import os
 import time
 import re
+import numpy as np
 
 import torch
-
+from torch.autograd import Variable
 from .basic_method import BasicMethod
 from ..utils.loss_util import VATLoss
 from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
@@ -19,21 +20,33 @@ class VAT(BasicMethod):
                  args):
         super(VAT, self).__init__(train_loader, eval_loader, num_classes, args)
 
-        self.loss_ce = torch.nn.CrossEntropyLoss(ignore_index=DATA_NO_LABEL).cuda()
+        self.loss_ce = torch.nn.CrossEntropyLoss()
         self.loss_vat = VATLoss(self.args.eps)
 
         self.map = dict.fromkeys(['Epoch', 'EpochTime', 'TrainLoss', 'TestLoss', 'TestAccuracy',
                                   'TrainSupervisedLoss', 'TrainConsisencyLoss', 'TrainUnsupervisedLoss',
                                   'LearningRate'])
 
-        n_labels = re.findall(r"(\d+)_balanced_labels", str(args.labels))
-        if len(n_labels) == 0:
-            labels_str = "all_labels"
-        else:
-            labels_str = str(n_labels[0])
         self.training_csv = GenericCSV(os.path.join(self.result_folder, 'training_label_{lb}_seed_{se}.csv'
-                                                    .format(lb=labels_str, se=args.seed)),
+                                                    .format(lb=self.labels_str, se=args.seed)),
                                        *list(self.map.keys()))
+
+        labeled_train, unlabeled_train = [], []
+        labeled_target = []
+
+        for (data, target) in self.train_loader:
+            if isinstance(data, tuple) or isinstance(data, list):
+                data = data[0]
+            zca_data = self.zca(data)
+            l_idx = (target.view(-1) != DATA_NO_LABEL).nonzero().view(-1)
+            ul_idx = (target.view(-1) == DATA_NO_LABEL).nonzero().view(-1)
+            labeled_train.append(zca_data[l_idx])
+            labeled_target.append(target[l_idx])
+            unlabeled_train.append(zca_data[ul_idx])
+
+        self.labeled_train = torch.cat(labeled_train, dim=0)
+        self.labeled_target = torch.cat(labeled_target, dim=0)
+        self.unlabeled_train = torch.cat(unlabeled_train, dim=0)
 
     def adjust_optimizer_params(self, optimizer, epoch):
         if epoch < self.args.epoch_decay_start:
@@ -54,7 +67,6 @@ class VAT(BasicMethod):
             return decayed_lr
 
     def train_model(self):
-        self.train_iter_loader = iter(self.train_loader)
         for epoch in range(self.start_epoch, self.args.epochs):
             print("epoch {e}".format(e=epoch))
             start = time.time()
@@ -105,42 +117,35 @@ class VAT(BasicMethod):
 
         total_data_size, total_labeled_size = 0, 0
         for i in range(self.args.num_iter_per_epoch):
-        #   for i, (input, target) in enumerate(self.train_loader):
+            batch_indices = torch.LongTensor(np.random.choice(self.labeled_train.size(0), self.args.labeled_batch_size,
+                                                              replace=False))
+            labeled_input = self.labeled_train[batch_indices]
+            labeled_target = self.labeled_target[batch_indices]
+            batch_indices_unlabeled = torch.LongTensor(
+                np.random.choice(self.unlabeled_train.size(0), self.args.batch_size - self.args.labeled_batch_size,
+                                 replace=False))
+            unlabeled_input = self.unlabeled_train[batch_indices_unlabeled]
+
             try:
-                input, target = next(self.train_iter_loader)
-            except StopIteration:
-                self.train_iter_loader = iter(self.train_loader)
-                input, target = next(self.train_iter_loader)
-            if isinstance(input, tuple) or isinstance(input, list):
-                input_var = torch.autograd.Variable(input[0])
-            else:
-                input_var = torch.autograd.Variable(input)
-            try:
-                target_var = torch.autograd.Variable(target.cuda(async=True))
+                labeled_input_var, labeled_target_var = Variable(labeled_input.cuda()), Variable(labeled_target.cuda())
+                unlabeled_input_var = Variable(unlabeled_input.cuda())
             except:
-                target_var = torch.autograd.Variable(target)
+                labeled_input_var, labeled_target_var = Variable(labeled_input), Variable(labeled_target)
+                unlabeled_input_var = Variable(unlabeled_input)
                 
             data_time.update(time.time() - end)
-            minibatch_size = len(target_var)
-            labeled_minibatch_size = target_var.data.ne(DATA_NO_LABEL).sum().float()
+            minibatch_size = len(labeled_input_var) + len(unlabeled_input_var)
+            labeled_minibatch_size = len(labeled_input_var)
             total_data_size += minibatch_size
             total_labeled_size += labeled_minibatch_size
 
-            input_labeled_index = (target != DATA_NO_LABEL).view(-1).nonzero().view(-1)
-            input_unlabeled_index = (target == DATA_NO_LABEL).view(-1).nonzero().view(-1)
-
-            if input_labeled_index is None or len(input_labeled_index) == 0:
-                loss_ce = torch.cuda.FloatTensor([0])
-                output_1 = None
-            else:
-                output_1 = self.model(input_var[input_labeled_index])
-                loss_ce = self.loss_ce(output_1, target_var[input_labeled_index])
-
-            loss_vat = self.loss_vat(self.model, input_var[input_unlabeled_index])
+            labeled_output = self.model(labeled_input_var)
+            loss_ce = self.loss_ce(labeled_output, labeled_target_var)
+            loss_vat = self.loss_vat(self.model, unlabeled_input_var)
 
             if i % 50 == 0:
                 print("cur labeled_size is {ls}, cur minibatch_size is {ms}, loss_ce = {ce}, weighted_loss_vat = {vat}"
-                      .format(ls=labeled_minibatch_size, ms=minibatch_size,ce=loss_ce, vat=loss_vat.item()))
+                      .format(ls=labeled_minibatch_size, ms=minibatch_size, ce=loss_ce, vat=loss_vat.item()))
 
             loss = loss_ce + loss_vat
             losses_all.update(loss.item())
@@ -148,11 +153,11 @@ class VAT(BasicMethod):
             super(VAT, self).log_to_tf("supervised_loss", loss_ce.item(), self.global_step, True)
             super(VAT, self).log_to_tf("consistency_loss", loss_vat.item(), self.global_step, True)
             # measure accuracy and record loss
-            if self.args.topk == 1 and output_1 is not None:
-                prec1 = accuracy(output_1.data, target_var[input_labeled_index].data, topk=(1, ))[0]
+            if self.args.topk == 1 and labeled_output is not None:
+                prec1 = accuracy(labeled_output.data, labeled_target_var.data, topk=(1, ))[0]
                 top1.update(prec1.item(), labeled_minibatch_size)
-            elif output_1 is not None:
-                prec1, prec5 = accuracy(output_1.data, target_var[input_labeled_index].data, topk=(1, 5))
+            elif labeled_output is not None:
+                prec1, prec5 = accuracy(labeled_output, labeled_target_var.data, topk=(1, 5))
                 top5.update(prec5.item(), labeled_minibatch_size)
                 top1.update(prec1.item(), labeled_minibatch_size)
 
@@ -177,7 +182,7 @@ class VAT(BasicMethod):
                 time=time.time()-start,
                 e=epoch, Loss_CE_Epoch=losses_ce.avg, Loss_Consisency_Epoch=losses_vat.avg,
                 Loss_All_Epoch=losses_all.avg, Train_Top1_Epoch=top1.avg, Train_Top5_Epoch=top5.avg,
-                Train_Error1_Epoch= 100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
+                Train_Error1_Epoch=100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
                 lr=lr
               ))
 
@@ -208,13 +213,12 @@ class VAT(BasicMethod):
 
         with torch.no_grad():
             for i, (input, target) in enumerate(self.eval_loader):
+                input = self.zca(input)
                 meters.update('data_time', time.time() - end)
-
-                input_var = torch.autograd.Variable(input)
                 try:
-                    target_var = torch.autograd.Variable(target.cuda(async=True))
+                    input_var, target_var = Variable(input.cuda()), Variable(target.cuda())
                 except:
-                    target_var = torch.autograd.Variable(target)
+                    input_var, target_var = Variable(input), Variable(target)
 
                 minibatch_size = len(target_var)
                 labeled_minibatch_size = target_var.data.ne(DATA_NO_LABEL).sum().float()

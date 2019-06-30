@@ -8,16 +8,16 @@ from ..utils import fun_util
 from ..utils import loss_util
 from ..utils.log_util import AverageMeter, AverageMeterSet, GenericCSV
 from ..utils.data_util import ZCATransformation
-from ..utils.constant import DATA_NO_LABEL, METHOD_TEMPORAL_ENSEMBLING
+from ..utils.constant import DATA_NO_LABEL, METHOD_PI
 
 
-class TemporalEnsembling(BasicMethod):
+class Pi(BasicMethod):
     def __init__(self,
                  train_loader,
                  eval_loader,
                  num_classes,
                  args):
-        super(TemporalEnsembling, self).__init__(train_loader, eval_loader, num_classes, args)
+        super(Pi, self).__init__(train_loader, eval_loader, num_classes, args)
 
         self.loss_ce = torch.nn.CrossEntropyLoss(reduction='sum', ignore_index=DATA_NO_LABEL).cuda()
         self.loss_pi = loss_util.softmax_mse_loss
@@ -40,8 +40,8 @@ class TemporalEnsembling(BasicMethod):
             adam_beta1 = rampdown_value * 0.9 + (1.0 - rampdown_value) * 0.5
             param_group['betas'] = adam_beta1, old_beta2
 
-        super(TemporalEnsembling, self).log_to_tf("lr", learning_rate, epoch, True)
-        super(TemporalEnsembling, self).log_to_tf("beta1", adam_beta1, epoch, True)
+        super(Pi, self).log_to_tf("lr", learning_rate, epoch, True)
+        super(Pi, self).log_to_tf("beta1", adam_beta1, epoch, True)
         return learning_rate
 
     def adjust_consistency_weight(self, epoch):
@@ -83,7 +83,7 @@ class TemporalEnsembling(BasicMethod):
     @staticmethod
     def get_params():
         return {
-            'method': METHOD_TEMPORAL_ENSEMBLING
+            'method': METHOD_PI
         }
 
     def _train_one_epoch(self, epoch, cons_weight, init_mode=False):
@@ -100,7 +100,7 @@ class TemporalEnsembling(BasicMethod):
             end = time.time()
 
             lr = self.adjust_optimizer_params(self.optimizer, epoch)
-            super(TemporalEnsembling, self).log_to_tf("cons_weight", cons_weight, epoch, True)
+            super(Pi, self).log_to_tf("cons_weight", cons_weight, epoch, True)
 
         self.model.train()
         total_data_size, total_labeled_size = 0, 0
@@ -135,8 +135,8 @@ class TemporalEnsembling(BasicMethod):
 
             loss = loss_ce + loss_pi
             losses_all.update(loss.item())
-            super(TemporalEnsembling, self).log_to_tf("supervised_loss", loss_ce.item(), self.global_step, True)
-            super(TemporalEnsembling, self).log_to_tf("consistency_loss", loss_pi.item(), self.global_step, True)
+            super(Pi, self).log_to_tf("supervised_loss", loss_ce.item(), self.global_step, True)
+            super(Pi, self).log_to_tf("consistency_loss", loss_pi.item(), self.global_step, True)
 
             if self.args.topk == 1:
                 prec1 = fun_util.accuracy(output_1.data, target_var.data, topk=(1,))[0]
@@ -170,13 +170,13 @@ class TemporalEnsembling(BasicMethod):
                     Train_Error1_Epoch=100.0 - top1.avg, Train_Error5_Epoch=100.0 - top5.avg,
                     lr=lr
             ))
-            super(TemporalEnsembling, self).log_to_tf("Loss_CE_Epoch", losses_ce.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Loss_Consisency_Epoch", losses_pi.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Loss_All_Epoch", losses_all.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Train_Top1_Epoch", top1.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Train_Top5_Epoch", top5.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Train_Error1_Epoch", 100.0 - top1.avg, epoch, True)
-            super(TemporalEnsembling, self).log_to_tf("Train_Error5_Epoch", 100.0 - top5.avg, epoch, True)
+            super(Pi, self).log_to_tf("Loss_CE_Epoch", losses_ce.avg, epoch, True)
+            super(Pi, self).log_to_tf("Loss_Consisency_Epoch", losses_pi.avg, epoch, True)
+            super(Pi, self).log_to_tf("Loss_All_Epoch", losses_all.avg, epoch, True)
+            super(Pi, self).log_to_tf("Train_Top1_Epoch", top1.avg, epoch, True)
+            super(Pi, self).log_to_tf("Train_Top5_Epoch", top5.avg, epoch, True)
+            super(Pi, self).log_to_tf("Train_Error1_Epoch", 100.0 - top1.avg, epoch, True)
+            super(Pi, self).log_to_tf("Train_Error5_Epoch", 100.0 - top5.avg, epoch, True)
 
             self.map['Epoch'] = epoch
             self.map['EpochTime'] = time.time() - start
@@ -235,11 +235,11 @@ class TemporalEnsembling(BasicMethod):
                 end = time.time()
 
             if epoch is not None:
-                super(TemporalEnsembling, self).log_to_tf("Test_Top1_Epoch", meters['top1'].avg, epoch, False)
-                super(TemporalEnsembling, self).log_to_tf("Test_Top5_Epoch", meters['top5'].avg, epoch, False)
-                super(TemporalEnsembling, self).log_to_tf("Test_Error1_Epoch", 100.0 - meters['top1'].avg, epoch, False)
-                super(TemporalEnsembling, self).log_to_tf("Test_Error5_Epoch", 100.0 - meters['top5'].avg, epoch, False)
-                super(TemporalEnsembling, self).log_to_tf("Test_Class_Loss", meters['class_loss'].avg, epoch, False)
+                super(Pi, self).log_to_tf("Test_Top1_Epoch", meters['top1'].avg, epoch, False)
+                super(Pi, self).log_to_tf("Test_Top5_Epoch", meters['top5'].avg, epoch, False)
+                super(Pi, self).log_to_tf("Test_Error1_Epoch", 100.0 - meters['top1'].avg, epoch, False)
+                super(Pi, self).log_to_tf("Test_Error5_Epoch", 100.0 - meters['top5'].avg, epoch, False)
+                super(Pi, self).log_to_tf("Test_Class_Loss", meters['class_loss'].avg, epoch, False)
 
                 self.map['TestLoss'] = meters['class_loss'].avg
                 self.map['TestAccuracy'] = meters['top1'].avg

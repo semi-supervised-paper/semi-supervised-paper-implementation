@@ -1,6 +1,7 @@
 from ..utils.fun_util import export
 from .mean_teacher import MeanTeacher
-from .temporal_ensembling import TemporalEnsembling
+from .tempens import TemporalEnsembling
+from .pi import Pi
 from .vat import VAT
 
 
@@ -12,6 +13,11 @@ def mean_teacher(**kwargs):
 @export
 def temporal_ensembling(**kwargs):
     return TemporalEnsembling(**kwargs)
+
+
+@export
+def pi(**kwargs):
+    return Pi(**kwargs)
 
 
 @export

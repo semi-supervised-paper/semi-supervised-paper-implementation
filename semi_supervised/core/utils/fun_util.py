@@ -144,10 +144,10 @@ def l2_normalize(d):
     return d
 
 
-def kl_div(log_probs, probs):
-    # pytorch KLDLoss is averaged over all dim if size_average=True
-    kld = F.kl_div(log_probs, probs, size_average=False)
-    return kld / log_probs.shape[0]
+def kl_div(q_logit, p_logit):
+    q_logprobs = F.log_softmax(q_logit, 1)
+    p_probs = F.softmax(p_logit, 1)
+    return F.kl_div(q_logprobs, p_probs, reduction='mean')
 
 
 @contextlib.contextmanager
