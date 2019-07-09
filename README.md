@@ -29,7 +29,9 @@ python3 -m semi_supervised.core.utils.cifar10
 To reproduce the result in [Temporal Ensembling for Semi-Supervised Learning](https://arxiv.org/abs/1610.02242), run
 
 ```python
-CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.temporal_ensembling.cifar10_test
+CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.tempens.cifar10_test
+CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.pi.cifar10_test
+
 ```
 
 To reproduce the result in [Mean teachers are better role models](https://arxiv.org/abs/1703.01780). run
@@ -38,7 +40,7 @@ To reproduce the result in [Mean teachers are better role models](https://arxiv.
 CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.mean_teacher.cifar10_test
 ```
 
-*Note: This code does not be tested on multiple GPUs, so there is no guarantee that the result is satisfying on multiple GPUs.*
+*Note: This code does not be tested on multiple GPUs, so there is no guarantee that the result is satisfying when using multiple GPUs.*
 
 
 
@@ -46,7 +48,7 @@ CUDA_VISIBLE_DEVICES=0 python3 -m semi_supervised.experiments.mean_teacher.cifar
 
 | Number of Labeled Data                                       | 1000      | 2000      | 4000      | All labels |
 | ------------------------------------------------------------ | --------- | --------- | --------- | ---------- |
-| Pi model (from [SNTG](http://openaccess.thecvf.com/content_cvpr_2018/papers/Luo_Smooth_Neighbors_on_CVPR_2018_paper.pdf)) | 68.35 $\pm$ 1.20     | 82.43 $\pm$ 0.44 | 87.64‬$\pm$ 0.31 | 94.44 $\pm$ 0.10 |       |
+| Pi model (from [SNTG](http://openaccess.thecvf.com/content_cvpr_2018/papers/Luo_Smooth_Neighbors_on_CVPR_2018_paper.pdf)) | 68.35 $$\pm$$ 1.20     | 82.43 $\pm$ 0.44 | 87.64‬$\pm$ 0.31 | 94.44 $\pm$ 0.10 |       |
 | **Pi model (this repository)** | 69.615 $\pm$ 1.3013 | 82.92 $\pm$ 0.532 | 87.925 $\pm$ 0.227 | --- |
 | Tempens model (from [SNTG](http://openaccess.thecvf.com/content_cvpr_2018/papers/Luo_Smooth_Neighbors_on_CVPR_2018_paper.pdf)) | 76.69 $\pm$ 1.01 | 84.36 $\pm$ 0.39 | 87.84 $\pm$ 0.24 | 94.4 $\pm$ 0.10 | 
 | **Tempens model (this repository)**                              | 78.517 $\pm$ 1.1653 | 84.757 $\pm$ 0.42445 | 88.166 $\pm$ 0.24324 | 94.72 $\pm$ 0.14758  |
