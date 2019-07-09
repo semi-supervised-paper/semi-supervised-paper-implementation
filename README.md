@@ -63,7 +63,7 @@ In semi-supervised learning, many papers use common training strategies. This se
 
 ### Learning rate
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_jvn&space;lr&space;=&space;rampup\_value&space;*&space;rampdown\_value&space;*&space;init\_lr" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_jvn&space;lr&space;=&space;rampup\_value&space;*&space;rampdown\_value&space;*&space;init\_lr" title="lr = rampup\_value * rampdown\_value * init\_lr" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_cm&space;\rm{lr}&space;=&space;\rm{rampup\_value}&space;*&space;\rm{rampdown\_value}&space;*&space;\rm{init\_lr}" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_cm&space;\rm{lr}&space;=&space;\rm{rampup\_value}&space;*&space;\rm{rampdown\_value}&space;*&space;\rm{init\_lr}" title="\rm{lr} = \rm{rampup\_value} * \rm{rampdown\_value} * \rm{init\_lr}" /></a>
 
 You can find out how to compute rampup_value and rampdown_value in semi_supervised/core/utils/fun_utils.py.
 
@@ -75,7 +75,7 @@ The curve of the learning rate is shown in the figure below.
 
 Many methods in semi-supervised learning use Adam optimizer with beta1 = 0.9 and beta2 = 0.999. During training, beta1 is dynamically changed.
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_jvn&space;adam\_beta1&space;=&space;rampdown\_value&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;rampdown\_value)&space;*&space;0.5" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_jvn&space;adam\_beta1&space;=&space;rampdown\_value&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;rampdown\_value)&space;*&space;0.5" title="adam\_beta1 = rampdown\_value * 0.9 + (1.0 - rampdown\_value) * 0.5" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_phv&space;\rm{adam\_beta1}&space;=&space;\rm{rampdown\_value}&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;\rm{rampdown\_value})&space;*&space;0.5" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_phv&space;\rm{adam\_beta1}&space;=&space;\rm{rampdown\_value}&space;*&space;0.9&space;&plus;&space;(1.0&space;-&space;\rm{rampdown\_value})&space;*&space;0.5" title="\rm{adam\_beta1} = \rm{rampdown\_value} * 0.9 + (1.0 - \rm{rampdown\_value}) * 0.5" /></a>
 
 The curve of beta1 is shown in the figure below.
 
@@ -85,7 +85,7 @@ The curve of beta1 is shown in the figure below.
 
 Some methods use dynamically changed weight to balance supervised loss and unsupervised loss. 
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_jvn&space;weight&space;=&space;init\_weight&space;*&space;rampup\_value" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_jvn&space;weight&space;=&space;init\_weight&space;*&space;rampup\_value" title="weight = init\_weight * rampup\_value" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=\fn_cm&space;\rm{weight}&space;=&space;\rm{init\_weight}&space;*&space;\rm{rampup\_value}" target="_blank"><img src="https://latex.codecogs.com/svg.latex?\fn_cm&space;\rm{weight}&space;=&space;\rm{init\_weight}&space;*&space;\rm{rampup\_value}" title="\rm{weight} = \rm{init\_weight} * \rm{rampup\_value}" /></a>
 
 The curve of consistency weight is shown in the figure below.
 
